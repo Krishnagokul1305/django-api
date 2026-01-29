@@ -76,27 +76,16 @@ A Django REST Framework API with JWT-based authentication and user management sy
 
 The API will be available at `http://localhost:8000/`
 
-## User API Endpoints
+## API Endpoints
 
-### Authentication
+All API endpoints are prefixed with `/api/v1/`
 
-- `POST /api/token/` - Obtain JWT token pair (access & refresh)
-- `POST /api/token/refresh/` - Refresh access token
+### Authentication Endpoints
 
-### User Management
-
-#### List All Users (SUPERADMIN only)
+#### Register User
 
 ```
-GET /users/
-Authorization: Bearer <access_token>
-```
-
-#### Create User (SUPERADMIN only)
-
-```
-POST /users/
-Authorization: Bearer <access_token>
+POST /api/v1/auth/register/
 Content-Type: application/json
 
 {
@@ -107,43 +96,39 @@ Content-Type: application/json
 }
 ```
 
-#### Get User Details (Owner only)
+#### Login (Obtain JWT Token Pair)
 
 ```
-GET /users/<id>/
-Authorization: Bearer <access_token>
-```
-
-#### Update User (Owner only)
-
-```
-PATCH /users/<id>/
-Authorization: Bearer <access_token>
+POST /api/v1/auth/login/
 Content-Type: application/json
 
 {
-  "name": "Updated Name"
+  "email": "john@example.com",
+  "password": "securepassword123"
+}
+
+Response:
+{
+  "access": "access_token_here",
+  "refresh": "refresh_token_here"
 }
 ```
 
-#### Delete User (Owner only)
+#### Refresh Access Token
 
 ```
-DELETE /users/<id>/
-Authorization: Bearer <access_token>
-```
+POST /api/v1/auth/token/refresh/
+Content-Type: application/json
 
-#### Get Current User Profile
-
-```
-GET /users/me/
-Authorization: Bearer <access_token>
+{
+  "refresh": "refresh_token_here"
+}
 ```
 
 #### Change Password
 
 ```
-POST /users/<id>/change-password/
+POST /api/v1/auth/<id>/change-password/
 Authorization: Bearer <access_token>
 Content-Type: application/json
 
@@ -157,7 +142,7 @@ Content-Type: application/json
 #### Forgot Password
 
 ```
-POST /users/forgot-password/
+POST /api/v1/auth/forgot-password/
 Content-Type: application/json
 
 {
@@ -168,7 +153,7 @@ Content-Type: application/json
 #### Reset Password
 
 ```
-POST /users/reset-password/
+POST /api/v1/auth/reset-password/
 Content-Type: application/json
 
 {
@@ -176,6 +161,63 @@ Content-Type: application/json
   "new_password": "newpassword123",
   "confirm_new_password": "newpassword123"
 }
+```
+
+### User Management Endpoints
+
+#### List All Users
+
+```
+GET /api/v1/users/
+Authorization: Bearer <access_token>
+```
+
+#### Get User Details
+
+```
+GET /api/v1/users/<id>/
+Authorization: Bearer <access_token>
+```
+
+#### Get Current User Profile
+
+```
+GET /api/v1/users/me/
+Authorization: Bearer <access_token>
+```
+
+#### Create User
+
+```
+POST /api/v1/users/
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "securepassword123",
+  "role": "USER"
+}
+```
+
+#### Update User
+
+```
+PATCH /api/v1/users/<id>/
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "name": "Updated Name"
+}
+```
+
+#### Delete User
+
+```
+DELETE /api/v1/users/<id>/
+Authorization: Bearer <access_token>
 ```
 
 ## User Roles
