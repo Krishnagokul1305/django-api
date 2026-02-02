@@ -5,11 +5,11 @@ from django.utils import timezone
 import secrets
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, name, role="USER", password=None, **extra_fields):
+    def create_user(self, email, name, password=None, **extra_fields):
         if not email:
             raise ValueError("The Email field must be set")
         email = self.normalize_email(email)
-        user = self.model(email=email, name=name, role=role, **extra_fields)
+        user = self.model(email=email, name=name, **extra_fields)
         user.set_password(password)  
         user.save()
         return user
@@ -17,22 +17,13 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, name, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        return self.create_user(email=email, name=name, role='SUPERADMIN', password=password, **extra_fields)
+        return self.create_user(email=email, name=name, password=password, **extra_fields)
 
 class User(AbstractBaseUser,PermissionsMixin):
-    ROLE_CHOICES = [
-        ('USER', 'User'),
-        ('ADMIN', 'Admin'),
-        ('SUPERADMIN', 'Superadmin'),
-    ]
     name=models.CharField(max_length=100,blank=False,null=False)
     email=models.EmailField(unique=True,blank=False,null=False)
     password=models.CharField(max_length=100)
-    role=models.CharField(
-        max_length=25,
-        choices=ROLE_CHOICES,
-        default="USER"
-    )
+    phone_number=models.CharField(max_length=20,blank=True,null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)

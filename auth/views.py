@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from users.models import User
+from users.serializers import CreateUserSerializer
 from .serializers import ChangePasswordSerializer,ForgotPasswordSerializer,ResetPasswordSerializer
 from rest_framework import status 
 from rest_framework.permissions import IsAuthenticated
@@ -77,4 +78,13 @@ class ResetPasswordAPI(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserRegisterAPI(APIView):
-    pass
+    def post(self, request):
+        data = request.data.copy()
+        data['is_staff'] = False  # Force normal user creation
+        
+        serializer = CreateUserSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
