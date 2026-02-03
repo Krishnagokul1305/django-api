@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "webinars",
     "memberships",
     "feedback",
+    "anymail"
 ]
 
 MIDDLEWARE = [
@@ -95,6 +96,15 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
+
+EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
+
+ANYMAIL = {
+    'MAILGUN_API_KEY': 'your-mailgun-api-key',  # Replace with your Mailgun API key
+    'MAILGUN_SENDER_DOMAIN': 'yourdomain.com',  # Replace with your Mailgun domain (e.g., 'mg.yourdomain.com')
+}
+
+DEFAULT_FROM_EMAIL = 'you@yourdomain.com'
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = os.getenv('TIME_ZONE', 'UTC')

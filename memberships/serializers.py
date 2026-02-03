@@ -20,7 +20,7 @@ class MembershipRegistrationSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'user', 'user_id', 'membership', 'membership_id', 'start_date', 'expiry_date', 
             'is_active', 'renewal_count', 'payment_status', 'payment_amount', 'payment_method',
-            'transaction_id', 'payment_date', 'notes', 'created_at', 'updated_at'
+            'transaction_id', 'payment_date', 'reason', 'created_at', 'updated_at'
         ]
         read_only_fields = ['start_date', 'created_at', 'updated_at']
 
@@ -35,4 +35,4 @@ class MembershipRegistrationListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = MembershipRegistration
-        fields = ['id', 'user_email', 'membership_name', 'start_date', 'expiry_date', 'is_active', 'payment_status']
+        fields = ['id', 'user_email', 'membership_name', 'start_date', 'expiry_date', 'is_active', 'payment_status', 'reason']

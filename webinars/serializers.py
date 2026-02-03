@@ -20,7 +20,7 @@ class WebinarRegistrationSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'webinar', 'webinar_id', 'user', 'user_id', 'registered_at', 
             'attended', 'attendance_marked_at', 'rating', 'feedback', 'feedback_given_at',
-            'rejection_reason', 'notes', 'created_at', 'updated_at'
+            'reason', 'rejection_reason', 'created_at', 'updated_at'
         ]
         read_only_fields = ['registered_at', 'attendance_marked_at', 'feedback_given_at', 'created_at', 'updated_at']
 
@@ -35,7 +35,7 @@ class WebinarRegistrationListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = WebinarRegistration
-        fields = ['id', 'user_email', 'webinar_title', 'registered_at', 'attended', 'rating']
+        fields = ['id', 'user_email', 'webinar_title', 'registered_at', 'attended', 'rating', 'reason']
 
 
 class WebinarRegistrationAttendanceSerializer(serializers.ModelSerializer):

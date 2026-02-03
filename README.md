@@ -1,21 +1,21 @@
-# CRUD API with Authentication
+# Liture API
 
-A Django REST Framework API with JWT-based authentication and user management system.
+A Django REST Framework API for managing users, webinars, internships, memberships, and generic feedback, with JWT authentication and PostgreSQL.
 
 ## Features
 
-- JWT Token-based Authentication
-- User CRUD Operations
-- Role-based Access Control (USER, ADMIN, SUPERADMIN)
-- Password Reset Functionality
-- User Profile Management
-- PostgreSQL Database Support
-- **Webinar Management** - Registration, attendance tracking
-- **Internship Management** - Application tracking with status management
-- **Membership Management** - Subscription and payment tracking
-- **Generic Feedback System** - For webinars, internships, memberships, and other entities
-- Filter and Pagination Support
-- Admin Interface with organized dashboards
+- JWT-based authentication (login, refresh)
+- Custom user model with profile fields
+- User CRUD with staff/superuser permissions
+- Password reset flow via reset token
+- PostgreSQL database support
+- **Webinars**: manage events, registrations, attendance, and feedback
+- **Internships**: manage postings and applications with status tracking
+- **Memberships**: subscriptions, renewals, and payment metadata
+- **Generic Feedback**: content-type based feedback for multiple modules
+- Filtering and pagination across list endpoints
+- Media uploads for webinar/internship images
+- Mailgun email support via Anymail
 
 ## Prerequisites
 

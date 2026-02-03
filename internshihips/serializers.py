@@ -19,7 +19,7 @@ class InternshipRegistrationSerializer(serializers.ModelSerializer):
         model = InternshipRegistration
         fields = [
             'id', 'internship', 'internship_id', 'user', 'user_id', 
-            'resume_link', 'status', 'applied_at', 'status_updated_at', 
+            'resume_link', 'reason', 'status', 'applied_at', 'status_updated_at', 
             'rejection_reason', 'created_at', 'updated_at'
         ]
         read_only_fields = ['applied_at', 'status_updated_at', 'created_at', 'updated_at']
@@ -35,7 +35,7 @@ class InternshipRegistrationListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = InternshipRegistration
-        fields = ['id', 'user_email', 'internship_title', 'status', 'applied_at']
+        fields = ['id', 'user_email', 'internship_title', 'status', 'applied_at', 'reason']
 
 
 class InternshipApplicationReviewSerializer(serializers.ModelSerializer):

@@ -31,6 +31,8 @@ class InternshipRegistration(models.Model):
     # Resume
     resume_link = models.URLField(help_text="URL to hosted resume (e.g., S3, Google Drive)")
     
+    reason = models.TextField(blank=True, null=True, help_text="User's reason for applying/interest in internship")
+    
     # Application Status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     applied_at = models.DateTimeField(auto_now_add=True)

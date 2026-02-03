@@ -45,7 +45,7 @@ class MembershipRegistration(models.Model):
     transaction_id = models.CharField(max_length=255, null=True, blank=True, unique=True)
     payment_date = models.DateTimeField(null=True, blank=True)
     
-    notes = models.TextField(blank=True, null=True)
+    reason = models.TextField(blank=True, null=True, help_text="User's reason for joining/interest in membership")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

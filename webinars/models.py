@@ -35,10 +35,11 @@ class WebinarRegistration(models.Model):
     feedback = models.TextField(blank=True, null=True, help_text="Feedback from attendee")
     feedback_given_at = models.DateTimeField(null=True, blank=True)
     
+    reason = models.TextField(blank=True, null=True, help_text="User's reason for registering/interest in webinar")
+    
     # Rejection/Cancellation
     rejection_reason = models.TextField(blank=True, null=True, help_text="Reason for cancellation/rejection")
     
-    notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
