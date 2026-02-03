@@ -1,4 +1,5 @@
 from django.db import models
+from users.models import User
 
 class Webinar(models.Model):
     image = models.ImageField(upload_to='webinars/', null=True, blank=True)
@@ -14,3 +15,36 @@ class Webinar(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class WebinarRegistration(models.Model):
+    """User registration for webinars with attendance and feedback tracking"""
+    webinar = models.ForeignKey(Webinar, on_delete=models.CASCADE, related_name='registrations')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='webinar_registrations')
+    registered_at = models.DateTimeField(auto_now_add=True)
+    attended = models.BooleanField(default=False, help_text="Whether user attended the webinar")
+    attendance_marked_at = models.DateTimeField(null=True, blank=True)
+    
+    # Feedback and Rating
+    rating = models.IntegerField(
+        null=True, 
+        blank=True, 
+        choices=[(i, str(i)) for i in range(1, 6)],
+        help_text="Rating from 1-5"
+    )
+    feedback = models.TextField(blank=True, null=True, help_text="Feedback from attendee")
+    feedback_given_at = models.DateTimeField(null=True, blank=True)
+    
+    # Rejection/Cancellation
+    rejection_reason = models.TextField(blank=True, null=True, help_text="Reason for cancellation/rejection")
+    
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-registered_at']
+        unique_together = ('webinar', 'user')  # One registration per user per webinar
+
+    def __str__(self):
+        return f"{self.user.email} - {self.webinar.title}"

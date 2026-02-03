@@ -1,11 +1,22 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Webinar
-from .serializers import WebinarSerializer
+from .models import Webinar, WebinarRegistration
+from .serializers import (
+    WebinarSerializer, 
+    WebinarRegistrationSerializer,
+    WebinarRegistrationListSerializer,
+    WebinarRegistrationAttendanceSerializer,
+    WebinarFeedbackSerializer,
+    WebinarRejectionSerializer,
+    WebinarRegistrationStatusSerializer
+)
 from .filters import WebinarFilter
 from users.pagination import CustomPagination
 from users.permissions import IsStaffOrSuperAdmin
+from django.utils import timezone
 
 class WebinarViewSet(viewsets.ModelViewSet):
     queryset = Webinar.objects.filter()
@@ -21,3 +32,158 @@ class WebinarViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [IsAuthenticated, IsStaffOrSuperAdmin]
         return [permission() for permission in permission_classes]
+
+
+class WebinarRegistrationViewSet(viewsets.ModelViewSet):
+    serializer_class = WebinarRegistrationSerializer
+    pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['attended', 'rating', 'user', 'webinar']
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser or user.is_staff:
+            return WebinarRegistration.objects.all()
+        return WebinarRegistration.objects.filter(user=user)
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [IsAuthenticated()]
+        elif self.action == 'create':
+            return [IsAuthenticated()]
+        else:
+            return [IsAuthenticated(), IsStaffOrSuperAdmin()]
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return WebinarRegistrationListSerializer
+        elif self.action == 'mark_attendance':
+            return WebinarRegistrationAttendanceSerializer
+        elif self.action == 'submit_feedback':
+            return WebinarFeedbackSerializer
+        elif self.action == 'reject':
+            return WebinarRejectionSerializer
+        elif self.action == 'change_status':
+            return WebinarRegistrationStatusSerializer
+        return WebinarRegistrationSerializer
+
+    def create(self, request, *args, **kwargs):
+        """Register user for a webinar"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        """Ensure user is set correctly"""
+        if not serializer.validated_data.get('user_id'):
+            serializer.validated_data['user_id'] = self.request.user.id
+        serializer.save()
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsStaffOrSuperAdmin])
+    def mark_attendance(self, request, pk=None):
+        """Mark attendance for a webinar registration"""
+        registration = self.get_object()
+        serializer = WebinarRegistrationAttendanceSerializer(registration, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        
+        # Update attendance_marked_at if marking as attended
+        if serializer.validated_data.get('attended'):
+            registration.attendance_marked_at = timezone.now()
+        
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def submit_feedback(self, request, pk=None):
+        """
+        Submit feedback for a webinar (users can only submit once).
+        Required fields: rating (1-5), feedback (optional)
+        """
+        registration = self.get_object()
+        
+        if registration.feedback_given_at:
+            return Response(
+                {'error': 'You have already submitted feedback for this webinar.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if registration.user != request.user:
+            return Response(
+                {'error': 'You can only submit feedback for your own registration.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        serializer = WebinarFeedbackSerializer(registration, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        
+        registration.feedback_given_at = timezone.now()
+        serializer.save()
+        
+        return Response(
+            {**serializer.data, 'message': 'Feedback submitted successfully'},
+            status=status.HTTP_200_OK
+        )
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsStaffOrSuperAdmin])
+    def reject(self, request, pk=None):
+        """
+        Reject/Cancel registration with reason.
+        Required fields: rejection_reason
+        """
+        registration = self.get_object()
+        serializer = WebinarRejectionSerializer(registration, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return Response(
+            {**serializer.data, 'message': 'Registration rejected/cancelled'},
+            status=status.HTTP_200_OK
+        )
+
+    @action(detail=True, methods=['patch'], permission_classes=[IsAuthenticated, IsStaffOrSuperAdmin])
+    def change_status(self, request, pk=None):
+        """
+        Change registration status.
+        Required fields: status (accepted/rejected/cancelled/pending)
+        If status is 'rejected', rejection_reason is required.
+        Optional fields: notes
+        """
+        registration = self.get_object()
+        new_status = request.data.get('status')
+        rejection_reason = request.data.get('rejection_reason')
+        
+        valid_statuses = ['accepted', 'rejected', 'cancelled', 'pending']
+        if not new_status:
+            return Response(
+                {'error': 'Status field is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if new_status not in valid_statuses:
+            return Response(
+                {'error': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Require rejection reason when rejecting
+        if new_status == 'rejected' and not rejection_reason:
+            return Response(
+                {'error': 'Rejection reason is required when setting status to rejected.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Update the registration
+        serializer = WebinarRegistrationStatusSerializer(
+            registration, 
+            data=request.data, 
+            partial=True,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        response_data = WebinarRegistrationSerializer(registration).data
+        response_data['message'] = f'Registration status changed to {new_status}'
+        
+        return Response(response_data, status=status.HTTP_200_OK)

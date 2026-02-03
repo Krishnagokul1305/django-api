@@ -2,6 +2,13 @@ from rest_framework import  serializers
 from .models import User
 from django.contrib.auth import password_validation
 
+class UserSerializer(serializers.ModelSerializer):
+    """Basic user serializer for nested usage"""
+    class Meta:
+        model = User
+        fields = ['id', 'name', 'email', 'phone_number', 'is_staff', 'is_superuser', 'is_active']
+        read_only_fields = ['id']
+
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model=User

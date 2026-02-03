@@ -25,9 +25,11 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     "users",
+    "authentication",
     "internshihips",
     "webinars",
     "memberships",
+    "feedback",
 ]
 
 MIDDLEWARE = [
