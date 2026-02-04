@@ -1,12 +1,25 @@
 from rest_framework import serializers
 from .models import Internship, InternshipRegistration
 from users.serializers import UserSerializer
+from core.utils import validate_image_file
+from django.core.exceptions import ValidationError
 
 class InternshipSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required=False, allow_null=True)
+    
     class Meta:
         model = Internship
         fields = ['id', 'image', 'title', 'description', 'event_date', 'is_active', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
+    
+    def validate_image(self, value):
+        """Validate image file"""
+        if value:
+            try:
+                validate_image_file(value)
+            except ValidationError as e:
+                raise serializers.ValidationError(str(e))
+        return value
 
 
 class InternshipRegistrationSerializer(serializers.ModelSerializer):
