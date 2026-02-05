@@ -36,6 +36,7 @@ class InternshipRegistrationViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['status', 'user', 'internship']
+    parser_classes = (MultiPartParser, FormParser)
 
     def get_queryset(self):
         user = self.request.user

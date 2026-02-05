@@ -33,7 +33,6 @@ class Feedback(models.Model):
         choices=RATING_CHOICES,
         help_text="Rating from 1-5"
     )
-    title = models.CharField(max_length=255, blank=True, null=True)
     comment = models.TextField(help_text="Feedback comment/review")
 
     # Timestamps

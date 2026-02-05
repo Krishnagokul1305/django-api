@@ -27,12 +27,13 @@ class InternshipRegistrationSerializer(serializers.ModelSerializer):
     internship_id = serializers.IntegerField(write_only=True)
     user = UserSerializer(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
+    resume = serializers.FileField()
     
     class Meta:
         model = InternshipRegistration
         fields = [
             'id', 'internship', 'internship_id', 'user', 'user_id', 
-            'resume_link', 'reason', 'status', 'applied_at', 'status_updated_at', 
+            'resume', 'reason', 'status', 'applied_at', 'status_updated_at', 
             'rejection_reason', 'created_at', 'updated_at'
         ]
         read_only_fields = ['applied_at', 'status_updated_at', 'created_at', 'updated_at']

@@ -11,7 +11,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
         model = Feedback
         fields = [
             'id', 'user', 'user_id', 'content_type', 'object_id', 'feedback_type',
-            'rating', 'title', 'comment', 'submitted_at', 'created_at', 'updated_at'
+            'rating', 'comment', 'submitted_at', 'created_at', 'updated_at'
         ]
         read_only_fields = ['submitted_at', 'created_at', 'updated_at']
 
@@ -29,7 +29,7 @@ class FeedbackListSerializer(serializers.ModelSerializer):
         model = Feedback
         fields = [
             'id', 'user_name', 'user_email', 'content_type_name', 'object_id',
-            'feedback_type', 'rating', 'title', 'submitted_at'
+            'feedback_type', 'rating', 'submitted_at'
         ]
 
 
@@ -38,7 +38,7 @@ class FeedbackCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Feedback
-        fields = ['content_type', 'object_id', 'feedback_type', 'rating', 'title', 'comment']
+        fields = ['content_type', 'object_id', 'feedback_type', 'rating', 'comment']
 
     def validate(self, data):
         """Ensure feedback hasn't already been given for this object"""

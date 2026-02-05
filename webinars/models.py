@@ -18,22 +18,12 @@ class Webinar(models.Model):
 
 
 class WebinarRegistration(models.Model):
-    """User registration for webinars with attendance and feedback tracking"""
+    """User registration for webinars with attendance tracking"""
     webinar = models.ForeignKey(Webinar, on_delete=models.CASCADE, related_name='registrations')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='webinar_registrations')
     registered_at = models.DateTimeField(auto_now_add=True)
     attended = models.BooleanField(default=False, help_text="Whether user attended the webinar")
     attendance_marked_at = models.DateTimeField(null=True, blank=True)
-    
-    # Feedback and Rating
-    rating = models.IntegerField(
-        null=True, 
-        blank=True, 
-        choices=[(i, str(i)) for i in range(1, 6)],
-        help_text="Rating from 1-5"
-    )
-    feedback = models.TextField(blank=True, null=True, help_text="Feedback from attendee")
-    feedback_given_at = models.DateTimeField(null=True, blank=True)
     
     reason = models.TextField(blank=True, null=True, help_text="User's reason for registering/interest in webinar")
     

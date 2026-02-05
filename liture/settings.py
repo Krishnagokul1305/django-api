@@ -27,11 +27,12 @@ INSTALLED_APPS = [
     'django_filters',
     "users",
     "authentication",
-    "internshihips",
+    "internships",
     "webinars",
     "memberships",
     "feedback",
-    "anymail"
+    "anymail",
+    'django_extensions',
 ]
 
 MIDDLEWARE = [

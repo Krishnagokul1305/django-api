@@ -32,10 +32,10 @@ class WebinarRegistrationSerializer(serializers.ModelSerializer):
         model = WebinarRegistration
         fields = [
             'id', 'webinar', 'webinar_id', 'user', 'user_id', 'registered_at', 
-            'attended', 'attendance_marked_at', 'rating', 'feedback', 'feedback_given_at',
-            'reason', 'rejection_reason', 'created_at', 'updated_at'
+            'attended', 'attendance_marked_at', 'reason', 'rejection_reason', 
+            'created_at', 'updated_at'
         ]
-        read_only_fields = ['registered_at', 'attendance_marked_at', 'feedback_given_at', 'created_at', 'updated_at']
+        read_only_fields = ['registered_at', 'attendance_marked_at', 'created_at', 'updated_at']
 
     def create(self, validated_data):
         return WebinarRegistration.objects.create(**validated_data)
@@ -48,7 +48,7 @@ class WebinarRegistrationListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = WebinarRegistration
-        fields = ['id', 'user_email', 'webinar_title', 'registered_at', 'attended', 'rating', 'reason']
+        fields = ['id', 'user_email', 'webinar_title', 'registered_at', 'attended', 'reason']
 
 
 class WebinarRegistrationAttendanceSerializer(serializers.ModelSerializer):
@@ -57,21 +57,6 @@ class WebinarRegistrationAttendanceSerializer(serializers.ModelSerializer):
         model = WebinarRegistration
         fields = ['attended', 'attendance_marked_at']
         read_only_fields = ['attendance_marked_at']
-
-
-class WebinarFeedbackSerializer(serializers.ModelSerializer):
-    """Serializer for user feedback submission (once only per event)"""
-    
-    class Meta:
-        model = WebinarRegistration
-        fields = ['rating', 'feedback', 'feedback_given_at']
-        read_only_fields = ['feedback_given_at']
-
-    def validate(self, data):
-        """Ensure feedback hasn't already been given"""
-        if self.instance and self.instance.feedback_given_at:
-            raise serializers.ValidationError("Feedback has already been submitted for this webinar registration.")
-        return data
 
 
 class WebinarRejectionSerializer(serializers.ModelSerializer):

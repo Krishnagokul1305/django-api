@@ -10,7 +10,6 @@ from .serializers import (
     WebinarRegistrationSerializer,
     WebinarRegistrationListSerializer,
     WebinarRegistrationAttendanceSerializer,
-    WebinarFeedbackSerializer,
     WebinarRejectionSerializer,
     WebinarRegistrationStatusSerializer
 )
@@ -40,7 +39,7 @@ class WebinarRegistrationViewSet(viewsets.ModelViewSet):
     serializer_class = WebinarRegistrationSerializer
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['attended', 'rating', 'user', 'webinar']
+    filterset_fields = ['attended', 'user', 'webinar']
 
     def get_queryset(self):
         user = self.request.user
@@ -61,8 +60,6 @@ class WebinarRegistrationViewSet(viewsets.ModelViewSet):
             return WebinarRegistrationListSerializer
         elif self.action == 'mark_attendance':
             return WebinarRegistrationAttendanceSerializer
-        elif self.action == 'submit_feedback':
-            return WebinarFeedbackSerializer
         elif self.action == 'reject':
             return WebinarRejectionSerializer
         elif self.action == 'change_status':
@@ -95,37 +92,6 @@ class WebinarRegistrationViewSet(viewsets.ModelViewSet):
         
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
-    def submit_feedback(self, request, pk=None):
-        """
-        Submit feedback for a webinar (users can only submit once).
-        Required fields: rating (1-5), feedback (optional)
-        """
-        registration = self.get_object()
-        
-        if registration.feedback_given_at:
-            return Response(
-                {'error': 'You have already submitted feedback for this webinar.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        if registration.user != request.user:
-            return Response(
-                {'error': 'You can only submit feedback for your own registration.'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
-        serializer = WebinarFeedbackSerializer(registration, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        
-        registration.feedback_given_at = timezone.now()
-        serializer.save()
-        
-        return Response(
-            {**serializer.data, 'message': 'Feedback submitted successfully'},
-            status=status.HTTP_200_OK
-        )
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsStaffOrSuperAdmin])
     def reject(self, request, pk=None):
