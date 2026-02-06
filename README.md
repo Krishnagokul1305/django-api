@@ -99,515 +99,76 @@ The API is organized into the following modules:
 - **Memberships** (`/api/v1/memberships/`) - Membership subscriptions and registrations
 - **Feedback** (`/api/v1/feedbacks/`) - Generic feedback system for all modules
 
-### Authentication Endpoints
+### Authentication Routes
 
-#### Register User
+- `POST /api/v1/auth/register/` - Register new user
+- `POST /api/v1/auth/login/` - Login and obtain JWT token pair
+- `POST /api/v1/auth/token/refresh/` - Refresh access token
+- `POST /api/v1/auth/<id>/change-password/` - Change password
+- `POST /api/v1/auth/forgot-password/` - Request password reset
+- `POST /api/v1/auth/reset-password/` - Reset password with token
 
-```
-POST /api/v1/auth/register/
-Content-Type: application/json
+### User Management Routes
 
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "securepassword123",
-  "role": "USER"
-}
-```
+- `GET /api/v1/users/` - List all users
+- `GET /api/v1/users/<id>/` - Get user details
+- `GET /api/v1/users/me/` - Get current user profile
+- `POST /api/v1/users/` - Create user
+- `PATCH /api/v1/users/<id>/` - Update user
 
-#### Login (Obtain JWT Token Pair)
-
-```
-POST /api/v1/auth/login/
-Content-Type: application/json
-
-{
-  "email": "john@example.com",
-  "password": "securepassword123"
-}
-
-Response:
-{
-  "access": "access_token_here",
-  "refresh": "refresh_token_here"
-}
-```
-
-#### Refresh Access Token
+### Webinar Routes
 
-```
-POST /api/v1/auth/token/refresh/
-Content-Type: application/json
+- `GET /api/v1/webinars/` - List all webinars
+- `GET /api/v1/webinars/<id>/` - Get webinar details
+- `POST /api/v1/webinars/` - Create webinar (Staff only)
 
-{
-  "refresh": "refresh_token_here"
-}
-```
+### Webinar Registration Routes
 
-#### Change Password
+- `GET /api/v1/webinars/registrations/` - List user's registrations
+- `POST /api/v1/webinars/registrations/` - Register for webinar
+- `GET /api/v1/webinars/registrations/<id>/` - Get registration details
+- `POST /api/v1/webinars/registrations/<id>/mark_attendance/` - Mark attendance (Staff only)
+- `POST /api/v1/webinars/registrations/<id>/submit_feedback/` - Submit feedback
+- `PATCH /api/v1/webinars/registrations/<id>/change_status/` - Change registration status (Staff only)
+- `POST /api/v1/webinars/registrations/<id>/reject/` - Reject registration (Staff only)
 
-```
-POST /api/v1/auth/<id>/change-password/
-Authorization: Bearer <access_token>
-Content-Type: application/json
+### Internship Routes
 
-{
-  "old_password": "currentpassword",
-  "new_password": "newpassword123",
-  "confirm_new_password": "newpassword123"
-}
-```
+- `GET /api/v1/internships/` - List all internships
+- `GET /api/v1/internships/<id>/` - Get internship details
+- `POST /api/v1/internships/` - Create internship (Staff only)
 
-#### Forgot Password
+### Internship Registration Routes
 
-```
-POST /api/v1/auth/forgot-password/
-Content-Type: application/json
+- `GET /api/v1/internships/registrations/` - List applications
+- `POST /api/v1/internships/registrations/` - Apply for internship
+- `GET /api/v1/internships/registrations/<id>/` - Get application details
+- `PATCH /api/v1/internships/registrations/<id>/change_status/` - Change application status (Staff only)
+- `GET /api/v1/internships/registrations/pending_applications/` - Get pending applications (Staff only)
 
-{
-  "email": "user@example.com"
-}
-```
+### Membership Routes
 
-#### Reset Password
+- `GET /api/v1/memberships/` - List all memberships
+- `GET /api/v1/memberships/<id>/` - Get membership details
+- `POST /api/v1/memberships/` - Create membership (Staff only)
 
-```
-POST /api/v1/auth/reset-password/
-Content-Type: application/json
+### Membership Registration Routes
 
-{
-  "token": "reset-token",
-  "new_password": "newpassword123",
-  "confirm_new_password": "newpassword123"
-}
-```
+- `GET /api/v1/memberships/registrations/` - List membership registrations
+- `POST /api/v1/memberships/registrations/` - Register for membership
+- `GET /api/v1/memberships/registrations/<id>/` - Get registration details
+- `PATCH /api/v1/memberships/registrations/<id>/change_status/` - Change registration status (Staff only)
+- `PATCH /api/v1/memberships/registrations/<id>/` - Update payment status (Staff only)
 
-### User Management Endpoints
+### Feedback Routes
 
-#### List All Users
+- `GET /api/v1/feedbacks/` - List feedback
+- `POST /api/v1/feedbacks/` - Submit feedback (Authenticated users)
+- `GET /api/v1/feedbacks/<id>/` - Get feedback details
+- `PATCH /api/v1/feedbacks/<id>/` - Update feedback (Own feedback only)
+- `DELETE /api/v1/feedbacks/<id>/` - Delete feedback (Own feedback only)
 
-```
-GET /api/v1/users/
-Authorization: Bearer <access_token>
-```
-
-#### Get User Details
-
-```
-GET /api/v1/users/<id>/
-Authorization: Bearer <access_token>
-```
-
-#### Get Current User Profile
-
-```
-GET /api/v1/users/me/
-Authorization: Bearer <access_token>
-```
-
-#### Create User
-
-```
-POST /api/v1/users/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "securepassword123",
-  "role": "USER"
-}
-```
-
-#### Update User
-
-```
-PATCH /api/v1/users/<id>/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "name": "Updated Name"
-}
-```
-
-## Webinar Endpoints
-
-#### List All Webinars
-
-```
-GET /api/v1/webinars/
-```
-
-#### Get Webinar Details
-
-```
-GET /api/v1/webinars/<id>/
-```
-
-#### Create Webinar (Staff Only)
-
-```
-POST /api/v1/webinars/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "title": "Advanced Django",
-  "description": "Learn advanced Django concepts",
-  "image": <image_file>,
-  "event_date": "2026-03-15T10:00:00Z",
-  "is_active": true
-}
-```
-
-## Webinar Registration Endpoints
-
-#### List User's Webinar Registrations
-
-```
-GET /api/v1/webinars/registrations/
-Authorization: Bearer <access_token>
-```
-
-#### Register for a Webinar
-
-```
-POST /api/v1/webinars/registrations/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "webinar_id": 1
-}
-```
-
-#### Get Webinar Registration Details
-
-```
-GET /api/v1/webinars/registrations/<id>/
-Authorization: Bearer <access_token>
-```
-
-#### Mark Attendance (Staff Only)
-
-```
-POST /api/v1/webinars/registrations/<id>/mark_attendance/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "attended": true
-}
-```
-
-#### Submit Feedback (Users - One Time Only)
-
-```
-POST /api/v1/webinars/registrations/<id>/submit_feedback/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "rating": 5,
-  "feedback": "Great webinar, very informative!"
-}
-```
-
-#### Change Registration Status (Staff Only)
-
-```
-PATCH /api/v1/webinars/registrations/<id>/change_status/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "status": "accepted",
-  "notes": "Approved"
-}
-
-// For rejection (rejection_reason is required)
-{
-  "status": "rejected",
-  "rejection_reason": "Does not meet eligibility criteria",
-  "notes": "Optional notes"
-}
-```
-
-Valid statuses: `accepted`, `rejected`, `cancelled`, `pending`
-
-#### Reject Registration (Staff Only - Alternative)
-
-```
-POST /api/v1/webinars/registrations/<id>/reject/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "rejection_reason": "User cancelled"
-}
-```
-
-## Internship Endpoints
-
-#### List All Internships
-
-```
-GET /api/v1/internships/
-```
-
-#### Get Internship Details
-
-```
-GET /api/v1/internships/<id>/
-```
-
-#### Create Internship (Staff Only)
-
-```
-POST /api/v1/internships/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "title": "Backend Developer Internship",
-  "description": "Join our backend team",
-  "image": <image_file>,
-  "is_active": true
-}
-```
-
-## Internship Registration Endpoints
-
-#### List Internship Applications
-
-```
-GET /api/v1/internships/registrations/
-Authorization: Bearer <access_token>
-```
-
-#### Apply for Internship
-
-```
-POST /api/v1/internships/registrations/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "internship_id": 1,
-  "resume_link": "https://link-to-resume.com"
-}
-```
-
-#### Get Application Details
-
-```
-GET /api/v1/internships/registrations/<id>/
-Authorization: Bearer <access_token>
-```
-
-#### Update Application Status (Staff Only)
-
-```
-PATCH /api/v1/internships/registrations/<id>/update_status/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "status": "accepted"
-}
-
-// For rejection
-{
-  "status": "rejected",
-  "rejection_reason": "Not meeting requirements"
-}
-```
-
-#### Get Pending Applications (Staff Only)
-
-```
-GET /api/v1/internships/registrations/pending_applications/
-Authorization: Bearer <access_token>
-```
-
-Application statuses: `pending`, `accepted`, `rejected`
-
-## Membership Registration Endpoints
-
-## Membership Endpoints
-
-#### List All Memberships
-
-```
-GET /api/v1/memberships/
-```
-
-#### Get Membership Details
-
-```
-GET /api/v1/memberships/<id>/
-```
-
-#### Create Membership (Staff Only)
-
-```
-POST /api/v1/memberships/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "name": "Premium Membership",
-  "description": "Access to premium features",
-  "price": 99.99,
-  "duration_days": 30,
-  "is_active": true
-}
-```
-
-## Membership Registration Endpoints
-
-#### List Membership Registrations
-
-```
-GET /api/v1/memberships/registrations/
-Authorization: Bearer <access_token>
-```
-
-#### Register for Membership
-
-```
-POST /api/v1/memberships/registrations/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "membership_id": 1,
-  "expiry_date": "2026-05-03T00:00:00Z"
-}
-```
-
-#### Get Membership Registration Details
-
-```
-GET /api/v1/memberships/registrations/<id>/
-Authorization: Bearer <access_token>
-```
-
-#### Update Payment Status (Staff Only)
-
-```
-PATCH /api/v1/memberships/registrations/<id>/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "payment_status": "completed",
-  "payment_amount": "99.99",
-  "payment_method": "credit_card",
-  "transaction_id": "txn_12345"
-}
-```
-
-#### Renew Membership (Staff Only)
-
-```
-POST /api/v1/memberships/registrations/<id>/renew/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "duration_days": 30
-}
-```
-
-Payment statuses: `pending`, `completed`, `failed`, `refunded`
-
-## Feedback Endpoints
-
-Generic feedback system for webinars, internships, memberships, and other entities.
-
-#### List Feedback
-
-```
-GET /api/v1/feedbacks/
-```
-
-Query parameters:
-
-- `feedback_type`: Filter by type (webinar, internship, membership, event, general)
-- `rating`: Filter by rating (1-5)
-- `user`: Filter by user ID
-
-#### Submit Feedback (Authenticated Users - One Time Per Object)
-
-```
-POST /api/v1/feedbacks/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "content_type": 27,
-  "object_id": 1,
-  "feedback_type": "webinar",
-  "rating": 5,
-  "title": "Excellent Webinar",
-  "comment": "Very informative and well-structured. Highly recommended!"
-}
-```
-
-**Notes:**
-
-- `content_type`: Django ContentType ID (27 for Webinar, etc.)
-- `object_id`: ID of the object being reviewed
-- `rating`: Required, must be 1-5
-- `title`: Optional
-- `comment`: Required feedback text
-- Users can only submit one feedback per object
-
-#### Get Feedback Details
-
-```
-GET /api/v1/feedbacks/<id>/
-```
-
-#### Update Feedback (Own Feedback Only)
-
-```
-PATCH /api/v1/feedbacks/<id>/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "rating": 4,
-  "comment": "Updated feedback"
-}
-```
-
-#### Delete Feedback (Own Feedback Only)
-
-```
-DELETE /api/v1/feedbacks/<id>/
-Authorization: Bearer <access_token>
-```
-
-**Feedback Submission Example (Webinar):**
-
-```
-POST /api/v1/feedbacks/
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "content_type": 27,
-  "object_id": 1,
-  "feedback_type": "webinar",
-  "rating": 5,
-  "title": "Great Learning Experience",
-  "comment": "The presenter was very knowledgeable and the content was easy to follow."
-}
-```
+## User Roles
 
 - **USER**: Basic user with limited permissions
 - **ADMIN**: Administrative user with elevated permissions
@@ -625,54 +186,37 @@ Content-Type: application/json
 
 ## Registration Models
 
-### Webinar Registration Model
+### Webinar Registration
 
-- `id`: Unique identifier
-- `webinar_id`: Foreign key to Webinar
-- `user_id`: Foreign key to User
-- `registered_at`: Registration timestamp
-- `attended`: Boolean (attendance status)
+- `status`: pending, accepted, rejected, cancelled
+- `rejection_reason`: Reason for rejection/cancellation
+- `attended`: Attendance status
 - `attendance_marked_at`: When attendance was marked
-- `rating`: User rating (1-5 stars)
+- `rating`: User rating (1-5)
 - `feedback`: User feedback text
 - `feedback_given_at`: When feedback was submitted
-- `rejection_reason`: Reason for cancellation/rejection
-- `notes`: Admin notes
 
-### Internship Registration Model
+### Internship Registration
 
-- `id`: Unique identifier
-- `internship_id`: Foreign key to Internship
-- `user_id`: Foreign key to User
-- `education_level`: Current degree level
-- `current_institution`: Educational institution
-- `major_or_field`: Field of study
-- `resume_link`: URL to hosted resume
-- `portfolio_link`: URL to portfolio/GitHub
-- `skill_tags`: Array of skills (JSON)
-- `status`: Application status (pending, reviewing, shortlisted, interviewing, accepted, rejected, withdrawn)
-- `applied_at`: Application submission timestamp
-- `cover_letter`: Cover letter text
-- `expected_start_date`: Intended start date
-- `available_hours_per_week`: Availability
-- `interviewer_notes`: Admin feedback notes
+- `status`: pending, accepted, rejected
 - `rejection_reason`: Reason for rejection
+- `resume`: Uploaded resume file
+- `reason`: User's reason for applying
+- `applied_at`: Application submission timestamp
+- `status_updated_at`: When status was updated
 
-### Membership Registration Model
+### Membership Registration
 
-- `id`: Unique identifier
-- `membership_id`: Foreign key to Membership
-- `user_id`: Foreign key to User
-- `start_date`: Membership start date
-- `expiry_date`: Membership expiration date
-- `is_active`: Active status
-- `renewal_count`: Number of renewals
-- `payment_status`: Payment status (pending, completed, failed, refunded)
+- `status`: pending, accepted, rejected
+- `rejection_reason`: Reason for rejection
+- `payment_status`: pending, completed, failed, refunded
 - `payment_amount`: Amount paid
 - `payment_method`: Payment method used
 - `transaction_id`: Payment transaction ID
 - `payment_date`: When payment was made
-- `notes`: Admin notes
+- `reason`: User's reason for joining
+- `created_at`: Creation timestamp
+- `updated_at`: Last update timestamp
 
 ## Permissions
 

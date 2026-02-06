@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Internship, InternshipRegistration
-from users.serializers import UserSerializer
+from users.serializers import UserSerializer, UserSimpleSerializer
 from core.utils import validate_image_file
 from django.core.exceptions import ValidationError
 
@@ -25,7 +25,7 @@ class InternshipSerializer(serializers.ModelSerializer):
 class InternshipRegistrationSerializer(serializers.ModelSerializer):
     internship = InternshipSerializer(read_only=True)
     internship_id = serializers.IntegerField(write_only=True)
-    user = UserSerializer(read_only=True)
+    user = UserSimpleSerializer(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
     resume = serializers.FileField()
     
@@ -44,12 +44,12 @@ class InternshipRegistrationSerializer(serializers.ModelSerializer):
 
 class InternshipRegistrationListSerializer(serializers.ModelSerializer):
     """Simplified serializer for list views"""
-    user_email = serializers.CharField(source='user.email', read_only=True)
-    internship_title = serializers.CharField(source='internship.title', read_only=True)
+    internship = InternshipSerializer(read_only=True)
+    user = UserSimpleSerializer(read_only=True)
     
     class Meta:
         model = InternshipRegistration
-        fields = ['id', 'user_email', 'internship_title', 'status', 'applied_at', 'reason']
+        fields = ['id', 'internship', 'user', 'status', 'applied_at', 'reason']
 
 
 class InternshipApplicationReviewSerializer(serializers.ModelSerializer):

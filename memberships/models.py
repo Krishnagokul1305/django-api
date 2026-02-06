@@ -20,6 +20,12 @@ class Membership(models.Model):
 
 class MembershipRegistration(models.Model):
     """User membership registration and subscription tracking"""
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+    ]
+    
     PAYMENT_STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('completed', 'Completed'),
@@ -30,9 +36,9 @@ class MembershipRegistration(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='membership_registrations')
     membership = models.ForeignKey(Membership, on_delete=models.PROTECT, related_name='registrations')
     start_date = models.DateTimeField(auto_now_add=True)
-    expiry_date = models.DateTimeField()
     is_active = models.BooleanField(default=True)
-    renewal_count = models.IntegerField(default=0)
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     
     # Payment Fields
     payment_status = models.CharField(
@@ -46,6 +52,7 @@ class MembershipRegistration(models.Model):
     payment_date = models.DateTimeField(null=True, blank=True)
     
     reason = models.TextField(blank=True, null=True, help_text="User's reason for joining/interest in membership")
+    rejection_reason = models.TextField(blank=True, null=True, help_text="Reason for rejection")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -53,4 +60,4 @@ class MembershipRegistration(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.user.email} - {self.membership.name} ({self.start_date.date()} to {self.expiry_date.date()})"
+        return f"{self.user.email} - {self.membership.name} (since {self.start_date.date()})"

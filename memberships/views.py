@@ -32,7 +32,7 @@ class MembershipRegistrationViewSet(viewsets.ModelViewSet):
     serializer_class = MembershipRegistrationSerializer
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['payment_status', 'is_active', 'user']
+    filterset_fields = ['payment_status', 'is_active', 'user', 'status']
 
     def get_queryset(self):
         user = self.request.user
@@ -63,24 +63,47 @@ class MembershipRegistrationViewSet(viewsets.ModelViewSet):
             serializer.validated_data['user_id'] = self.request.user.id
         serializer.save()
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsStaffOrSuperAdmin])
-    def renew(self, request, pk=None):
-        """Renew a membership registration"""
+    @action(detail=True, methods=['patch'], permission_classes=[IsAuthenticated, IsStaffOrSuperAdmin])
+    def change_status(self, request, pk=None):
+        """
+        Change membership registration status.
+        Required fields: status (accepted/rejected/pending)
+        If status is 'rejected', rejection_reason is required.
+        """
         registration = self.get_object()
-        from django.utils import timezone
-        from datetime import timedelta
+        new_status = request.data.get('status')
+        rejection_reason = request.data.get('rejection_reason')
         
-        # Get duration from membership or use default 30 days
-        duration_days = 30
-        new_expiry = timezone.now() + timedelta(days=duration_days)
+        valid_statuses = ['pending', 'accepted', 'rejected']
+        if not new_status:
+            return Response(
+                {'error': 'Status field is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
-        registration.expiry_date = new_expiry
-        registration.renewal_count += 1
-        registration.is_active = True
-        registration.payment_status = 'pending'
+        if new_status not in valid_statuses:
+            return Response(
+                {'error': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Require rejection reason when rejecting
+        if new_status == 'rejected' and not rejection_reason:
+            return Response(
+                {'error': 'Rejection reason is required when setting status to rejected.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Update the status manually
+        registration.status = new_status
+        
+        # Update rejection reason if provided
+        if rejection_reason:
+            registration.rejection_reason = rejection_reason
+        
         registration.save()
         
-        return Response(
-            {'message': 'Membership renewed successfully', 'new_expiry': registration.expiry_date},
-            status=status.HTTP_200_OK
-        )
+        response_data = MembershipRegistrationSerializer(registration).data
+        response_data['message'] = f'Membership status changed to {new_status}'
+        
+        return Response(response_data, status=status.HTTP_200_OK)

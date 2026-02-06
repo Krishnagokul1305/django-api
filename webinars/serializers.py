@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Webinar, WebinarRegistration
-from users.serializers import UserSerializer
+from users.serializers import UserSerializer, UserSimpleSerializer
 from core.utils import validate_image_file
 from django.core.exceptions import ValidationError
 
@@ -25,14 +25,14 @@ class WebinarSerializer(serializers.ModelSerializer):
 class WebinarRegistrationSerializer(serializers.ModelSerializer):
     webinar = WebinarSerializer(read_only=True)
     webinar_id = serializers.IntegerField(write_only=True)
-    user = UserSerializer(read_only=True)
+    user = UserSimpleSerializer(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
     
     class Meta:
         model = WebinarRegistration
         fields = [
             'id', 'webinar', 'webinar_id', 'user', 'user_id', 'registered_at', 
-            'attended', 'attendance_marked_at', 'reason', 'rejection_reason', 
+            'attended', 'attendance_marked_at', 'status', 'reason', 'rejection_reason', 
             'created_at', 'updated_at'
         ]
         read_only_fields = ['registered_at', 'attendance_marked_at', 'created_at', 'updated_at']
@@ -43,12 +43,12 @@ class WebinarRegistrationSerializer(serializers.ModelSerializer):
 
 class WebinarRegistrationListSerializer(serializers.ModelSerializer):
     """Simplified serializer for list views"""
-    user_email = serializers.CharField(source='user.email', read_only=True)
-    webinar_title = serializers.CharField(source='webinar.title', read_only=True)
+    webinar = WebinarSerializer(read_only=True)
+    user = UserSimpleSerializer(read_only=True)
     
     class Meta:
         model = WebinarRegistration
-        fields = ['id', 'user_email', 'webinar_title', 'registered_at', 'attended', 'reason']
+        fields = ['id', 'webinar', 'user', 'registered_at', 'attended', 'status', 'reason']
 
 
 class WebinarRegistrationAttendanceSerializer(serializers.ModelSerializer):
@@ -63,7 +63,7 @@ class WebinarRejectionSerializer(serializers.ModelSerializer):
     """Serializer for rejection/cancellation with reason"""
     class Meta:
         model = WebinarRegistration
-        fields = ['rejection_reason', 'notes']
+        fields = ['rejection_reason']
 
 
 class WebinarRegistrationStatusSerializer(serializers.ModelSerializer):
@@ -71,7 +71,7 @@ class WebinarRegistrationStatusSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = WebinarRegistration
-        fields = ['rejection_reason', 'notes']
+        fields = ['rejection_reason']
 
     def validate(self, data):
         """Validate that rejection_reason is provided if status is being set to rejected"""

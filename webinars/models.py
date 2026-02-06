@@ -19,15 +19,22 @@ class Webinar(models.Model):
 
 class WebinarRegistration(models.Model):
     """User registration for webinars with attendance tracking"""
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+    ]
+    
     webinar = models.ForeignKey(Webinar, on_delete=models.CASCADE, related_name='registrations')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='webinar_registrations')
     registered_at = models.DateTimeField(auto_now_add=True)
     attended = models.BooleanField(default=False, help_text="Whether user attended the webinar")
     attendance_marked_at = models.DateTimeField(null=True, blank=True)
     
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
     reason = models.TextField(blank=True, null=True, help_text="User's reason for registering/interest in webinar")
     
-    # Rejection/Cancellation
     rejection_reason = models.TextField(blank=True, null=True, help_text="Reason for cancellation/rejection")
     
     created_at = models.DateTimeField(auto_now_add=True)

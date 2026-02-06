@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Webinar, WebinarRegistration
 from .serializers import (
@@ -39,7 +39,8 @@ class WebinarRegistrationViewSet(viewsets.ModelViewSet):
     serializer_class = WebinarRegistrationSerializer
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['attended', 'user', 'webinar']
+    filterset_fields = ['attended', 'user', 'webinar', 'status']
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
 
     def get_queryset(self):
         user = self.request.user
@@ -115,7 +116,6 @@ class WebinarRegistrationViewSet(viewsets.ModelViewSet):
         Change registration status.
         Required fields: status (accepted/rejected/cancelled/pending)
         If status is 'rejected', rejection_reason is required.
-        Optional fields: notes
         """
         registration = self.get_object()
         new_status = request.data.get('status')
@@ -141,15 +141,12 @@ class WebinarRegistrationViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Update the registration
-        serializer = WebinarRegistrationStatusSerializer(
-            registration, 
-            data=request.data, 
-            partial=True,
-            context={'request': request}
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        registration.status = new_status
+        
+        if rejection_reason:
+            registration.rejection_reason = rejection_reason
+        
+        registration.save()
         
         response_data = WebinarRegistrationSerializer(registration).data
         response_data['message'] = f'Registration status changed to {new_status}'

@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser,JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Internship, InternshipRegistration
 from .serializers import (
@@ -21,7 +21,7 @@ class InternshipViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
     filterset_class = InternshipFilter
-    parser_classes = (MultiPartParser, FormParser)
+    parser_classes = (MultiPartParser, FormParser,JSONParser)
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -36,7 +36,7 @@ class InternshipRegistrationViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['status', 'user', 'internship']
-    parser_classes = (MultiPartParser, FormParser)
+    parser_classes = (MultiPartParser, FormParser,JSONParser)
 
     def get_queryset(self):
         user = self.request.user
@@ -55,7 +55,7 @@ class InternshipRegistrationViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'list':
             return InternshipRegistrationListSerializer
-        elif self.action in ['update_status', 'add_review']:
+        elif self.action in ['change_status', 'add_review']:
             return InternshipApplicationReviewSerializer
         return InternshipRegistrationSerializer
 
@@ -69,13 +69,38 @@ class InternshipRegistrationViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['patch'], permission_classes=[IsAuthenticated, IsStaffOrSuperAdmin])
-    def update_status(self, request, pk=None):
+    def change_status(self, request, pk=None):
         """Update application status"""
         registration = self.get_object()
-        serializer = InternshipApplicationReviewSerializer(registration, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        new_status = request.data.get('status')
+        rejection_reason = request.data.get('rejection_reason')
+        
+        valid_statuses = ['pending', 'accepted', 'rejected']
+        if new_status and new_status not in valid_statuses:
+            return Response(
+                {'error': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Require rejection reason when rejecting
+        if new_status == 'rejected' and not rejection_reason:
+            return Response(
+                {'error': 'Rejection reason is required when setting status to rejected.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Update fields manually
+        if new_status:
+            registration.status = new_status
+        if rejection_reason:
+            registration.rejection_reason = rejection_reason
+        
+        registration.save()
+        
+        response_data = InternshipRegistrationSerializer(registration).data
+        response_data['message'] = f'Application status updated'
+        
+        return Response(response_data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsStaffOrSuperAdmin])
     def add_review(self, request, pk=None):
