@@ -63,6 +63,14 @@ class InternshipRegistrationViewSet(viewsets.ModelViewSet):
         """Apply for internship"""
         data = request.data.copy()
         data['user_id'] = request.user.id
+        internship_id = data.get('internship_id')
+        if internship_id and InternshipRegistration.objects.filter(
+            internship_id=internship_id, user_id=request.user.id
+        ).exists():
+            return Response(
+                {"error": "You have already applied for this internship."},
+                status=status.HTTP_409_CONFLICT,
+            )
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)

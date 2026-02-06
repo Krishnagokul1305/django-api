@@ -52,7 +52,16 @@ class MembershipRegistrationViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """Create a new membership registration"""
-        serializer = self.get_serializer(data=request.data)
+        data = request.data.copy()
+        membership_id = data.get('membership_id')
+        if membership_id and MembershipRegistration.objects.filter(
+            membership_id=membership_id, user_id=request.user.id
+        ).exists():
+            return Response(
+                {"error": "You have already registered for this membership."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)

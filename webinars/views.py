@@ -34,7 +34,6 @@ class WebinarViewSet(viewsets.ModelViewSet):
             permission_classes = [IsAuthenticated, IsStaffOrSuperAdmin]
         return [permission() for permission in permission_classes]
 
-
 class WebinarRegistrationViewSet(viewsets.ModelViewSet):
     serializer_class = WebinarRegistrationSerializer
     pagination_class = CustomPagination
@@ -69,7 +68,16 @@ class WebinarRegistrationViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """Register user for a webinar"""
-        serializer = self.get_serializer(data=request.data)
+        data = request.data.copy()
+        webinar_id = data.get('webinar_id')
+        if webinar_id and WebinarRegistration.objects.filter(
+            webinar_id=webinar_id, user_id=request.user.id
+        ).exists():
+            return Response(
+                {"error": "You have already registered for this webinar."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)

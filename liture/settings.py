@@ -47,6 +47,9 @@ MIDDLEWARE = [
 ]
 
 CORS_ORIGIN_ALLOWED_ALL = os.getenv('CORS_ORIGIN_ALLOWED_ALL', 'True').lower() == 'true'
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # React development server
+]
 
 AUTH_USER_MODEL = "users.User"
 
