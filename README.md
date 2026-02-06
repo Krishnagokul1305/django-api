@@ -98,6 +98,14 @@ The API is organized into the following modules:
 - **Internships** (`/api/v1/internships/`) - Internship management and applications
 - **Memberships** (`/api/v1/memberships/`) - Membership subscriptions and registrations
 - **Feedback** (`/api/v1/feedbacks/`) - Generic feedback system for all modules
+- **Dashboard Stats** (`/api/v1/stats/`) - Dashboard statistics and analytics
+
+### Dashboard Stats Routes
+
+- `GET /api/v1/stats/dashboard/` - Get basic dashboard counts (active internships, webinars, memberships)
+- `GET /api/v1/stats/past_registrations/` - Get registration statistics for past 10 days grouped by date
+- `GET /api/v1/stats/recent_registrations/?limit=5` - Get recent registrations across webinars and internships (customizable limit)
+- `GET /api/v1/stats/comprehensive/` - Get comprehensive statistics with detailed breakdowns
 
 ### Authentication Routes
 

@@ -56,7 +56,7 @@ class InternshipRegistration(models.Model):
 
     class Meta:
         ordering = ['-applied_at']
-        unique_together = ('internship', 'user')  # One application per user per internship
+        unique_together = ('internship', 'user')  
         indexes = [
             models.Index(fields=['status', '-applied_at']),
             models.Index(fields=['user', 'status']),
@@ -64,4 +64,3 @@ class InternshipRegistration(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.internship.title} ({self.status})"
-
