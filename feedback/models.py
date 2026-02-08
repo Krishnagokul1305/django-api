@@ -15,8 +15,6 @@ class Feedback(models.Model):
         ('general', 'General'),
     ]
 
-    RATING_CHOICES = [(i, str(i)) for i in range(1, 6)]
-
     # User providing feedback
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='feedbacks')
 
@@ -28,12 +26,7 @@ class Feedback(models.Model):
     # Feedback type
     feedback_type = models.CharField(max_length=20, choices=FEEDBACK_TYPE_CHOICES)
 
-    # Feedback content
-    rating = models.IntegerField(
-        choices=RATING_CHOICES,
-        help_text="Rating from 1-5"
-    )
-    comment = models.TextField(help_text="Feedback comment/review")
+    # Feedback content (rating and comment removed)
 
     # Timestamps
     submitted_at = models.DateTimeField(auto_now_add=True)
@@ -46,8 +39,7 @@ class Feedback(models.Model):
         indexes = [
             models.Index(fields=['feedback_type', '-submitted_at']),
             models.Index(fields=['user', 'feedback_type']),
-            models.Index(fields=['rating']),
         ]
 
     def __str__(self):
-        return f"{self.user.email} - {self.feedback_type} (Rating: {self.rating}/5)"
+        return f"{self.user.email} - {self.feedback_type}"

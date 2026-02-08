@@ -194,10 +194,8 @@ def get_dashboard_stats():
         payment_status='completed'
     ).aggregate(total=Sum('payment_amount'))['total'] or 0
     
-    # Feedback Stats
-    total_feedback = Feedback.objects.count()
-    average_rating = Feedback.objects.aggregate(avg=Avg('rating'))['avg']
-    
+    # Feedback Stats: rating/comment fields were removed from Feedback model
+    # Keep counts by type only
     feedback_by_type = dict(
         Feedback.objects.values('feedback_type').annotate(count=Count('id'))
         .values_list('feedback_type', 'count')
@@ -258,8 +256,6 @@ def get_dashboard_stats():
             'recent_registrations_7days': recent_membership_registrations,
         },
         'feedback': {
-            'total': total_feedback,
-            'average_rating': round(average_rating, 2) if average_rating else 0,
             'by_type': feedback_by_type,
         },
         'summary': {

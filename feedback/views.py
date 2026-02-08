@@ -16,7 +16,7 @@ class FeedbackViewSet(viewsets.ModelViewSet):
     serializer_class = FeedbackSerializer
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['feedback_type', 'rating', 'user']
+    filterset_fields = ['feedback_type', 'user']
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:

@@ -2,7 +2,6 @@ from rest_framework import serializers
 from .models import Feedback
 from users.serializers import UserSerializer
 
-
 class FeedbackSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
@@ -11,13 +10,12 @@ class FeedbackSerializer(serializers.ModelSerializer):
         model = Feedback
         fields = [
             'id', 'user', 'user_id', 'content_type', 'object_id', 'feedback_type',
-            'rating', 'comment', 'submitted_at', 'created_at', 'updated_at'
+            'submitted_at', 'created_at', 'updated_at'
         ]
         read_only_fields = ['submitted_at', 'created_at', 'updated_at']
 
     def create(self, validated_data):
         return Feedback.objects.create(**validated_data)
-
 
 class FeedbackListSerializer(serializers.ModelSerializer):
     """Simplified serializer for list views"""
@@ -29,16 +27,15 @@ class FeedbackListSerializer(serializers.ModelSerializer):
         model = Feedback
         fields = [
             'id', 'user_name', 'user_email', 'content_type_name', 'object_id',
-            'feedback_type', 'rating', 'submitted_at'
+            'feedback_type', 'submitted_at'
         ]
-
 
 class FeedbackCreateSerializer(serializers.ModelSerializer):
     """Serializer for user feedback submission"""
     
     class Meta:
         model = Feedback
-        fields = ['content_type', 'object_id', 'feedback_type', 'rating', 'comment']
+        fields = ['content_type', 'object_id', 'feedback_type']
 
     def validate(self, data):
         """Ensure feedback hasn't already been given for this object"""

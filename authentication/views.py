@@ -7,6 +7,9 @@ from .serializers import ChangePasswordSerializer,ForgotPasswordSerializer,Reset
 from rest_framework import status 
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.conf import settings
 
 class UserChangePasswordAPI(APIView):
     permission_classes=[IsAuthenticated]
@@ -35,24 +38,34 @@ class ForgotPasswordAPI(APIView):
         if serializer.is_valid():
             email = serializer.validated_data['email']
             
-            # Check if the user exists
             try:
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
                 return Response({"error": "No user is associated with this email address."}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Generate password reset token using the model's method
+            
             user.generate_password_reset_token()
+            frontend = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')
+            reset_path = f"/reset-password/?token={user.password_reset_token}"
+            reset_link = frontend.rstrip('/') + reset_path
 
-            reset_link = f"/reset-password/?token={user.password_reset_token}"  # Assuming your frontend handles this URL
-            # send_mail(
-            #     "Password Reset Request",
-            #     f"Click the link below to reset your password:\n\n{reset_link}",
-            #     settings.DEFAULT_FROM_EMAIL,
-            #     [email]
-            # )
-
-            return Response({"message": "Password reset link has been sent to your email.","token":reset_link}, status=status.HTTP_200_OK)
+            html_content = render_to_string('emails/resetpassword.html', {
+                'user_name': getattr(user, 'name', user.email),
+                'user_email': user.email,
+                'reset_link': reset_link,
+                'dashboard_url': frontend.rstrip('/') + '/dashboard',
+            })
+            
+            message = EmailMessage(
+                subject="Password reset request",
+                body=html_content,
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+                to=[user.email],
+            )
+            
+            message.content_subtype = "html"
+            message.send(fail_silently=False)
+            print("user validated")
+            return Response({"message": "Password reset link has been sent to your email."}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     

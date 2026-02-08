@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from core.views import StatsViewSet
+from django.conf import settings
+from django.conf.urls.static import static
 
 router = DefaultRouter()
 router.register(r'stats', StatsViewSet, basename='stats')
@@ -31,4 +33,4 @@ urlpatterns = [
     path('api/v1/webinars/', include('webinars.urls')),
     path('api/v1/memberships/', include('memberships.urls')),
     path('api/v1/feedbacks/', include('feedback.urls')),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

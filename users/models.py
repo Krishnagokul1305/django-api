@@ -23,7 +23,7 @@ class User(AbstractBaseUser,PermissionsMixin):
     name=models.CharField(max_length=100,blank=False,null=False)
     email=models.EmailField(unique=True,blank=False,null=False)
     password=models.CharField(max_length=100)
-    phone_number=models.CharField(max_length=20,blank=True,null=True)
+    phone_number=models.CharField(max_length=20,blank=False,null=False,unique=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)

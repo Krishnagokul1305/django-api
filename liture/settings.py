@@ -35,6 +35,31 @@ INSTALLED_APPS = [
     'django_extensions',
 ]
 
+EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
+# EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+# DEVELOPMENT ONLY
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+ANYMAIL = {
+    "RESEND_API_KEY": os.environ.get("RESEND_API_KEY"),
+}
+
+# ...existing code...
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler'},
+    },
+    'loggers': {
+        'django': {'handlers': ['console'], 'level': 'INFO'},
+        'anymail': {'handlers': ['console'], 'level': 'DEBUG', 'propagate': True},
+        'django.request': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+        # your app logger
+        'authentication': {'handlers': ['console'], 'level': 'DEBUG', 'propagate': True},
+    },
+}
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -59,7 +84,7 @@ ROOT_URLCONF = 'liture.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -101,14 +126,8 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
 
-ANYMAIL = {
-    'MAILGUN_API_KEY': 'your-mailgun-api-key',  # Replace with your Mailgun API key
-    'MAILGUN_SENDER_DOMAIN': 'yourdomain.com',  # Replace with your Mailgun domain (e.g., 'mg.yourdomain.com')
-}
-
-DEFAULT_FROM_EMAIL = 'you@yourdomain.com'
+DEFAULT_FROM_EMAIL ='Liture Admin <noreply@admin.liture.in>'
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = os.getenv('TIME_ZONE', 'UTC')
@@ -116,10 +135,11 @@ TIME_ZONE = os.getenv('TIME_ZONE', 'UTC')
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
