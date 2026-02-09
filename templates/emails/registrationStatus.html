@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Application Status Updated</title>
+    <title>Application Update</title>
     <style>
       table,
       td {
@@ -93,68 +93,44 @@
             <div
               style="
                 margin-bottom: 32px;
-                padding: 20px;
+                padding: 24px;
                 border-radius: 8px;
                 text-align: center;
                 background-color: #ecfdf5;
                 border: 1px solid #10b981;
               "
             >
-              <p
-                style="
-                  margin: 0;
-                  font-size: 14px;
-                  font-weight: 600;
-                  text-transform: uppercase;
-                  letter-spacing: 0.05em;
-                  color: #065f46;
-                "
-              >
-                Current Status
-              </p>
               <h1
                 style="
-                  margin: 8px 0 0 0;
+                  margin: 0;
                   font-size: 28px;
                   font-weight: 800;
                   color: #059669;
                 "
               >
-                {{ status|upper }}
+                ACCEPTED
               </h1>
             </div>
             {% else %}
             <div
               style="
                 margin-bottom: 32px;
-                padding: 20px;
+                padding: 24px;
                 border-radius: 8px;
                 text-align: center;
                 background-color: #fef2f2;
                 border: 1px solid #ef4444;
               "
             >
-              <p
-                style="
-                  margin: 0;
-                  font-size: 14px;
-                  font-weight: 600;
-                  text-transform: uppercase;
-                  letter-spacing: 0.05em;
-                  color: #991b1b;
-                "
-              >
-                Current Status
-              </p>
               <h1
                 style="
-                  margin: 8px 0 0 0;
+                  margin: 0;
                   font-size: 28px;
                   font-weight: 800;
                   color: #dc2626;
                 "
               >
-                {{ status|upper }}
+                REJECTED
               </h1>
             </div>
             {% endif %} {% if status == 'rejected' %}
@@ -260,10 +236,9 @@
               "
             >
               {% if status == 'accepted' %} Congratulations! Our team will reach
-              out to you within the next 48 hours with onboarding instructions.
-              {% else %} Thank you for your interest in Liture. While we cannot
-              move forward at this time, we encourage you to apply for future
-              opportunities. {% endif %}
+              out shortly with the next steps. {% else %} Thank you for your
+              interest in Liture. While we cannot move forward at this time, we
+              encourage you to apply for future opportunities. {% endif %}
             </p>
           </td>
         </tr>
@@ -278,7 +253,7 @@
             "
           >
             <p style="margin: 0; font-size: 12px; color: #9ca3af">
-              &copy; 2026 Liture Auth Team. This is an automated notification.
+              &copy; 2026 Liture Auth Team. All rights reserved.
             </p>
           </td>
         </tr>
