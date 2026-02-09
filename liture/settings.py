@@ -35,16 +35,24 @@ INSTALLED_APPS = [
     'django_extensions',
 ]
 
-EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
 # EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 # DEVELOPMENT ONLY
 # EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
-ANYMAIL = {
-    "RESEND_API_KEY": os.environ.get("RESEND_API_KEY"),
-}
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")  # your@gmail.com
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")  # app password
 
-# ...existing code...
+DEFAULT_FROM_EMAIL = "Liture <your@gmail.com>"
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL",
+    "Liture <noreply@example.com>"  # fallback
+)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -74,7 +82,7 @@ MIDDLEWARE = [
 CORS_ORIGIN_ALLOWED_ALL = os.getenv('CORS_ORIGIN_ALLOWED_ALL', 'True').lower() == 'true'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173", 
-     "http://localhost:3000", # React development server
+     "http://localhost:3000",
 ]
 
 AUTH_USER_MODEL = "users.User"

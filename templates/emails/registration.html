@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registration Confirmation</title>
+    <style>
+      table,
+      td {
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
+      }
+      img {
+        -ms-interpolation-mode: bicubic;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100% !important;
+      }
+      .content-table {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+      }
+    </style>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #f9fafb;
+      font-family:
+        -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto,
+        Helvetica, Arial, sans-serif;
+      color: #1f2937;
+    "
+  >
+    <div style="width: 100%; background-color: #f9fafb; padding: 40px 0">
+      <table
+        class="content-table"
+        cellpadding="0"
+        cellspacing="0"
+        border="0"
+        style="
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        "
+      >
+        <tr>
+          <td
+            style="
+              background-color: #ffffff;
+              padding: 32px 40px;
+              text-align: center;
+              border-bottom: 1px solid #f3f4f6;
+            "
+          >
+            <img
+              src="https://your-domain.com/path-to-logo.png"
+              alt="Liture Logo"
+              style="height: 48px; width: auto; display: block; margin: 0 auto"
+            />
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding: 40px">
+            <h2
+              style="
+                margin: 0 0 16px 0;
+                font-size: 24px;
+                font-weight: 700;
+                color: #111827;
+              "
+            >
+              Hi {{ user_name }},
+            </h2>
+            <p
+              style="
+                margin: 0 0 24px 0;
+                font-size: 16px;
+                line-height: 1.6;
+                color: #4b5563;
+              "
+            >
+              Thank you for your interest! Your registration for the
+              <strong>{{ type }}</strong> has been successfully received. We are
+              excited to have you join our community.
+            </p>
+
+            <div
+              style="
+                background-color: #f3f4f6;
+                border-radius: 8px;
+                padding: 24px;
+                margin-bottom: 32px;
+              "
+            >
+              <h3
+                style="
+                  margin: 0 0 12px 0;
+                  font-size: 14px;
+                  text-transform: uppercase;
+                  letter-spacing: 0.05em;
+                  color: #6b7280;
+                "
+              >
+                Registration Details
+              </h3>
+              <table width="100%" style="font-size: 15px; color: #374151">
+                <tr>
+                  <td style="padding: 4px 0"><strong>Title:</strong></td>
+                  <td style="padding: 4px 0">{{ title }}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 0"><strong>Type:</strong></td>
+                  <td style="padding: 4px 0">{{ type }}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 0"><strong>Email:</strong></td>
+                  <td style="padding: 4px 0">{{ email }}</td>
+                </tr>
+              </table>
+            </div>
+
+            <p style="margin: 0 0 24px 0; font-size: 15px; color: #4b5563">
+              Our team will review your application and get back to you shortly
+              with the next steps.
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td
+            style="
+              padding: 32px 40px;
+              background-color: #f9fafb;
+              text-align: center;
+              font-size: 13px;
+              color: #9ca3af;
+              border-top: 1px solid #f3f4f6;
+            "
+          >
+            <p style="margin: 0 0 8px 0">
+              This is an automated confirmation from Liture.
+            </p>
+            <p style="margin: 0">
+              &copy; {{ current_year }} Liture Team. All rights reserved.
+            </p>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>

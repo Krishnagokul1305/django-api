@@ -29,6 +29,8 @@ class User(AbstractBaseUser,PermissionsMixin):
     is_superuser = models.BooleanField(default=False)
     password_reset_token = models.CharField(max_length=255, null=True, blank=True)
     password_reset_expires = models.DateTimeField(null=True, blank=True)
+    email_verification_token = models.CharField(max_length=255, null=True, blank=True)
+    email_verification_expires = models.DateTimeField(null=True, blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
 
@@ -56,6 +58,13 @@ class User(AbstractBaseUser,PermissionsMixin):
         self.password_reset_token = None  # Clear the reset token
         self.password_reset_expires = None  # Clear the expiration time
         self.save()
+
+    def generate_email_verification_token(self):
+        verification_token = secrets.token_hex(32)
+        self.email_verification_token = verification_token
+        self.email_verification_expires = timezone.now() + timezone.timedelta(hours=24)
+        self.save()
+        return verification_token
 
     def __str__(self):
         return self.name

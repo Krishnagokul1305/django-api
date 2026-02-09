@@ -4,6 +4,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser,JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.conf import settings
 from .models import Internship, InternshipRegistration
 from .serializers import (
     InternshipSerializer, 
@@ -14,6 +17,7 @@ from .serializers import (
 from .filters import InternshipFilter
 from users.pagination import CustomPagination
 from users.permissions import IsStaffOrSuperAdmin
+from django.utils import timezone
 
 class InternshipViewSet(viewsets.ModelViewSet):
     queryset = Internship.objects.filter()
@@ -73,7 +77,26 @@ class InternshipRegistrationViewSet(viewsets.ModelViewSet):
             )
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(user=request.user)
+        registration = serializer.save(user=request.user)
+
+        user = registration.user
+        html_content = render_to_string('emails/registration.html', {
+            'user_name': getattr(user, 'name', user.email),
+            'title': registration.internship.title,
+            'type': 'Internship',
+            'email': user.email,
+            'current_year': timezone.now().year,
+        })
+
+        message = EmailMessage(
+            subject="Registration received",
+            body=html_content,
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+            to=[user.email],
+        )
+
+        message.content_subtype = "html"
+        message.send(fail_silently=False)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['patch'], permission_classes=[IsAuthenticated, IsStaffOrSuperAdmin])
@@ -97,13 +120,32 @@ class InternshipRegistrationViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Update fields manually
         if new_status:
             registration.status = new_status
         if rejection_reason:
             registration.rejection_reason = rejection_reason
         
         registration.save()
+
+        if registration.status in ['accepted', 'rejected']:
+            user = registration.user
+            html_content = render_to_string('emails/registrationStatus.html', {
+                'user_name': getattr(user, 'name', user.email),
+                'title': registration.internship.title,
+                'type': 'Internship',
+                'status': registration.status,
+                'rejection_reason': registration.rejection_reason or '',
+            })
+
+            message = EmailMessage(
+                subject="Application status updated",
+                body=html_content,
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+                to=[user.email],
+            )
+
+            message.content_subtype = "html"
+            message.send(fail_silently=False)
         
         response_data = InternshipRegistrationSerializer(registration).data
         response_data['message'] = f'Application status updated'

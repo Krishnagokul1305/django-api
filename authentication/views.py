@@ -3,13 +3,49 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from users.models import User
 from users.serializers import CreateUserSerializer
-from .serializers import ChangePasswordSerializer,ForgotPasswordSerializer,ResetPasswordSerializer
+from .serializers import ChangePasswordSerializer,ForgotPasswordSerializer,ResetPasswordSerializer,VerifyEmailSerializer
 from rest_framework import status 
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.conf import settings
+
+def send_verification_email(user):
+    frontend = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')
+    verification_path = f"/verify-email/?token={user.email_verification_token}"
+    verification_url = frontend.rstrip('/') + verification_path
+
+    html_content = render_to_string('emails/emailverification.html', {
+        'user_name': getattr(user, 'name', user.email),
+        'verification_url': verification_url,
+    })
+
+    message = EmailMessage(
+        subject="Verify your email",
+        body=html_content,
+        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+        to=[user.email],
+    )
+
+    message.content_subtype = "html"
+    message.send(fail_silently=False)
+
+def send_welcome_email(user):
+    html_content = render_to_string('emails/welcomeuser.html', {
+        'user_name': getattr(user, 'name', user.email),
+        'email': user.email,
+    })
+
+    message = EmailMessage(
+        subject="Welcome to Liture",
+        body=html_content,
+        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+        to=[user.email],
+    )
+
+    message.content_subtype = "html"
+    message.send(fail_silently=False)
 
 class UserChangePasswordAPI(APIView):
     permission_classes=[IsAuthenticated]
@@ -64,7 +100,6 @@ class ForgotPasswordAPI(APIView):
             
             message.content_subtype = "html"
             message.send(fail_silently=False)
-            print("user validated")
             return Response({"message": "Password reset link has been sent to your email."}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -93,11 +128,50 @@ class ResetPasswordAPI(APIView):
 class UserRegisterAPI(APIView):
     def post(self, request):
         data = request.data.copy()
-        data['is_staff'] = False  # Force normal user creation
-        
+        data['is_staff'] = False  
+
+        email = data.get('email')
+        existing_user = User.objects.filter(email=email).first()
+        if existing_user:
+            if existing_user.is_active:
+                return Response({"error": "Email already registered"}, status=status.HTTP_400_BAD_REQUEST)
+
+            existing_user.generate_email_verification_token()
+            send_verification_email(existing_user)
+            return Response({"message": "verification_resent"}, status=status.HTTP_200_OK)
+
         serializer = CreateUserSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
-        else:
-            return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            user = serializer.save()
+            user.is_active = False
+            user.generate_email_verification_token()
+            user.save()
+
+            send_verification_email(user)
+            return Response({"message": "created"}, status=status.HTTP_201_CREATED)
+
+        return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+class VerifyEmailAPI(APIView):
+    def post(self, request):
+        serializer = VerifyEmailSerializer(data=request.data)
+        if serializer.is_valid():
+            token = serializer.validated_data['verification_token']
+
+            try:
+                user = User.objects.get(email_verification_token=token)
+            except User.DoesNotExist:
+                return Response({"error": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if user.email_verification_expires and user.email_verification_expires < timezone.now():
+                return Response({"error": "Token has expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+            user.is_active = True
+            user.email_verification_token = None
+            user.email_verification_expires = None
+            user.save()
+
+            send_welcome_email(user)
+            return Response({"message": "Email verified successfully."}, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

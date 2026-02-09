@@ -61,7 +61,6 @@ class UserDetailAPI(APIView):
         else:
             return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         
-
 class UserProfileView(APIView):
     def get(self, request):
         user = request.user
