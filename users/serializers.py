@@ -2,6 +2,12 @@ from rest_framework import  serializers
 from .models import User
 from django.contrib.auth import password_validation
 
+class ContactSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255)
+    phone = serializers.CharField(max_length=50)
+    email = serializers.EmailField()
+    message = serializers.CharField()
+
 class UserSimpleSerializer(serializers.ModelSerializer):
     """Simple user serializer with minimal fields for nested usage"""
     class Meta:
