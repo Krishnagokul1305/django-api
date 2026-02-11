@@ -35,8 +35,8 @@ INSTALLED_APPS = [
     'django_extensions',
 ]
 # DEVELOPMENT ONLY
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 # EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 EMAIL_HOST = "smtp.gmail.com"
