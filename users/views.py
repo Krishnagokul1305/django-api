@@ -6,7 +6,9 @@ from rest_framework import status
 from .permissions import IsSuperAdmin,IsOwner,IsStaffOrSuperAdmin
 from .pagination import CustomPagination
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .tasks import send_contact_email
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.conf import settings
 
 class UserListAPI(APIView):
     permission_classes=[IsAuthenticated,IsStaffOrSuperAdmin]
@@ -72,13 +74,25 @@ class UserContactView(APIView):
         serializer = ContactSerializer(data=request.data)
         if not serializer.is_valid():
             return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        print("hello")
+        
         data = serializer.validated_data
-        send_contact_email.delay(
-            data['name'],
-            data['email'],
-            data['phone'],
-            data['message'],
+        html_content = render_to_string('emails/contact.html', {
+            'name': data['name'],
+            'email': data['email'],
+            'phone': data['phone'],
+            'message': data['message'],
+        })
+
+        to_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None)
+        message = EmailMessage(
+            subject=f"New contact message from {data['name']}",
+            body=html_content,
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+            to=[to_email] if to_email else [],
+            reply_to=[data['email']],
         )
+
+        message.content_subtype = "html"
+        message.send(fail_silently=False)
 
         return Response({"message": "Contact message sent successfully"}, status=status.HTTP_200_OK)

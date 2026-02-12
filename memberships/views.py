@@ -3,10 +3,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from .tasks import (
-    send_membership_registration_email,
-    send_membership_status_email,
-)
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.conf import settings
 from .models import Membership, MembershipRegistration
 from .serializers import (
     MembershipSerializer, 
@@ -72,12 +71,23 @@ class MembershipRegistrationViewSet(viewsets.ModelViewSet):
 
         registration = serializer.instance
         user = registration.user
-        send_membership_registration_email.delay(
-            getattr(user, 'name', user.email),
-            user.email,
-            registration.membership.name,
-            timezone.now().year,
+        html_content = render_to_string('emails/registration.html', {
+            'user_name': getattr(user, 'name', user.email),
+            'title': registration.membership.name,
+            'type': 'Membership',
+            'email': user.email,
+            'current_year': timezone.now().year,
+        })
+
+        message = EmailMessage(
+            subject="Registration received",
+            body=html_content,
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+            to=[user.email],
         )
+
+        message.content_subtype = "html"
+        message.send(fail_silently=False)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
@@ -128,13 +138,23 @@ class MembershipRegistrationViewSet(viewsets.ModelViewSet):
 
         if registration.status in ['accepted', 'rejected']:
             user = registration.user
-            send_membership_status_email.delay(
-                getattr(user, 'name', user.email),
-                user.email,
-                registration.membership.name,
-                registration.status,
-                registration.rejection_reason or '',
+            html_content = render_to_string('emails/registrationStatus.html', {
+                'user_name': getattr(user, 'name', user.email),
+                'title': registration.membership.name,
+                'type': 'Membership',
+                'status': registration.status,
+                'rejection_reason': registration.rejection_reason or '',
+            })
+
+            message = EmailMessage(
+                subject="Application status updated",
+                body=html_content,
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+                to=[user.email],
             )
+
+            message.content_subtype = "html"
+            message.send(fail_silently=False)
 
         response_data = MembershipRegistrationSerializer(registration).data
         response_data['message'] = f'Membership status changed to {new_status}'

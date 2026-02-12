@@ -34,18 +34,24 @@ INSTALLED_APPS = [
     "anymail",
     'django_extensions',
 ]
-# DEVELOPMENT ONLY
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_BACKEND = 'liture.email_backend.TimeoutEmailBackend'
+# Email configuration
+ANYMAIL = {
+    "EMAIL_BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+    "EMAIL_HOST": os.getenv('EMAIL_HOST', 'smtp.gmail.com'),
+    "EMAIL_PORT": int(os.getenv('EMAIL_PORT', '587')),
+    "EMAIL_USE_TLS": os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true',
+    "EMAIL_HOST_USER": os.environ.get("EMAIL_HOST_USER"),
+    "EMAIL_HOST_PASSWORD": os.environ.get("EMAIL_HOST_PASSWORD"),
+    "DEFAULT_FROM_EMAIL": os.environ.get("DEFAULT_FROM_EMAIL", 'Liture Admin <lituretech@gmail.com>'),
+}
 
-
-# EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")  # your@gmail.com
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")  # app password
+EMAIL_BACKEND = ANYMAIL["EMAIL_BACKEND"]
+EMAIL_HOST = ANYMAIL["EMAIL_HOST"]
+EMAIL_PORT = ANYMAIL["EMAIL_PORT"]
+EMAIL_USE_TLS = ANYMAIL["EMAIL_USE_TLS"]
+EMAIL_HOST_USER = ANYMAIL["EMAIL_HOST_USER"]
+EMAIL_HOST_PASSWORD = ANYMAIL["EMAIL_HOST_PASSWORD"]
+DEFAULT_FROM_EMAIL = ANYMAIL["DEFAULT_FROM_EMAIL"]
 
 # Celery settings
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
