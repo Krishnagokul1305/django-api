@@ -35,8 +35,9 @@ INSTALLED_APPS = [
     'django_extensions',
 ]
 # DEVELOPMENT ONLY
-# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = 'liture.email_backend.TimeoutEmailBackend'
+
 
 # EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 EMAIL_HOST = "smtp.gmail.com"
@@ -46,11 +47,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")  # your@gmail.com
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")  # app password
 
-DEFAULT_FROM_EMAIL = os.environ.get(
-    "DEFAULT_FROM_EMAIL",
-    "Liture <noreply@example.com>"  # fallback
-)
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -58,11 +54,24 @@ LOGGING = {
         'console': {'class': 'logging.StreamHandler'},
     },
     'loggers': {
-        'django': {'handlers': ['console'], 'level': 'INFO'},
-        'anymail': {'handlers': ['console'], 'level': 'DEBUG', 'propagate': True},
-        'django.request': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
-        # your app logger
+        # Log all Django logs
+        'django': {'handlers': ['console'], 'level': 'INFO'},  # You can change this to 'DEBUG' for more details
+        # Enable more detailed logging for the email system (SMTP)
+        'django.core.mail': {
+            'handlers': ['console'],
+            'level': 'DEBUG',  # Set to DEBUG to capture detailed email logs
+            'propagate': False
+        },
+        # Anymail logger to capture third-party email provider (e.g., SendGrid, Mailgun) logs
+        'anymail': {
+            'handlers': ['console'],
+            'level': 'DEBUG',  # Logs all activity, including SMTP interaction
+            'propagate': True
+        },
+        # Logging for your app (authentication module in this case)
         'authentication': {'handlers': ['console'], 'level': 'DEBUG', 'propagate': True},
+        # Request errors logging
+        'django.request': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
     },
 }
 
@@ -133,7 +142,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-DEFAULT_FROM_EMAIL ='Liture Admin <noreply@admin.liture.in>'
+DEFAULT_FROM_EMAIL ='Liture Admin <lituretech@gmail.com>'
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = os.getenv('TIME_ZONE', 'UTC')
