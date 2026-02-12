@@ -59,29 +59,24 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'console': {'class': 'logging.StreamHandler'},
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
     },
     'loggers': {
-        # Log all Django logs
-        'django': {'handlers': ['console'], 'level': 'INFO'},  # You can change this to 'DEBUG' for more details
-        # Enable more detailed logging for the email system (SMTP)
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
         'django.core.mail': {
             'handlers': ['console'],
-            'level': 'DEBUG',  # Set to DEBUG to capture detailed email logs
-            'propagate': False
+            'level': 'DEBUG',  # Log email sending in production
+            'propagate': False,
         },
-        # Anymail logger to capture third-party email provider (e.g., SendGrid, Mailgun) logs
-        'anymail': {
-            'handlers': ['console'],
-            'level': 'DEBUG',  # Logs all activity, including SMTP interaction
-            'propagate': True
-        },
-        # Logging for your app (authentication module in this case)
-        'authentication': {'handlers': ['console'], 'level': 'DEBUG', 'propagate': True},
-        # Request errors logging
-        'django.request': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
     },
 }
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
