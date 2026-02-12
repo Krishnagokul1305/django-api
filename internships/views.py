@@ -4,9 +4,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser,JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
-from django.core.mail import EmailMessage
-from django.template.loader import render_to_string
-from django.conf import settings
+from .tasks import (
+    send_internship_registration_email,
+    send_internship_status_email,
+)
 from .models import Internship, InternshipRegistration
 from .serializers import (
     InternshipSerializer, 
@@ -80,23 +81,12 @@ class InternshipRegistrationViewSet(viewsets.ModelViewSet):
         registration = serializer.save(user=request.user)
 
         user = registration.user
-        html_content = render_to_string('emails/registration.html', {
-            'user_name': getattr(user, 'name', user.email),
-            'title': registration.internship.title,
-            'type': 'Internship',
-            'email': user.email,
-            'current_year': timezone.now().year,
-        })
-
-        message = EmailMessage(
-            subject="Registration received",
-            body=html_content,
-            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-            to=[user.email],
+        send_internship_registration_email.delay(
+            getattr(user, 'name', user.email),
+            user.email,
+            registration.internship.title,
+            timezone.now().year,
         )
-
-        message.content_subtype = "html"
-        message.send(fail_silently=False)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['patch'], permission_classes=[IsAuthenticated, IsStaffOrSuperAdmin])
@@ -129,23 +119,13 @@ class InternshipRegistrationViewSet(viewsets.ModelViewSet):
 
         if registration.status in ['accepted', 'rejected']:
             user = registration.user
-            html_content = render_to_string('emails/registrationStatus.html', {
-                'user_name': getattr(user, 'name', user.email),
-                'title': registration.internship.title,
-                'type': 'Internship',
-                'status': registration.status,
-                'rejection_reason': registration.rejection_reason or '',
-            })
-
-            message = EmailMessage(
-                subject="Application status updated",
-                body=html_content,
-                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-                to=[user.email],
+            send_internship_status_email.delay(
+                getattr(user, 'name', user.email),
+                user.email,
+                registration.internship.title,
+                registration.status,
+                registration.rejection_reason or '',
             )
-
-            message.content_subtype = "html"
-            message.send(fail_silently=False)
         
         response_data = InternshipRegistrationSerializer(registration).data
         response_data['message'] = f'Application status updated'

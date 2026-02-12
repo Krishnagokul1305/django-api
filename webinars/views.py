@@ -4,9 +4,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
-from django.core.mail import EmailMessage
-from django.template.loader import render_to_string
-from django.conf import settings
+from .tasks import (
+    send_webinar_registration_email,
+    send_webinar_status_email,
+)
 from .models import Webinar, WebinarRegistration
 from .serializers import (
     WebinarSerializer, 
@@ -86,23 +87,12 @@ class WebinarRegistrationViewSet(viewsets.ModelViewSet):
 
         registration = serializer.instance
         user = registration.user
-        html_content = render_to_string('emails/registration.html', {
-            'user_name': getattr(user, 'name', user.email),
-            'title': registration.webinar.title,
-            'type': 'Webinar',
-            'email': user.email,
-            'current_year': timezone.now().year,
-        })
-
-        message = EmailMessage(
-            subject="Registration received",
-            body=html_content,
-            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-            to=[user.email],
+        send_webinar_registration_email.delay(
+            getattr(user, 'name', user.email),
+            user.email,
+            registration.webinar.title,
+            timezone.now().year,
         )
-
-        message.content_subtype = "html"
-        message.send(fail_silently=False)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
@@ -181,23 +171,13 @@ class WebinarRegistrationViewSet(viewsets.ModelViewSet):
 
         if registration.status in ['accepted', 'rejected']:
             user = registration.user
-            html_content = render_to_string('emails/registrationStatus.html', {
-                'user_name': getattr(user, 'name', user.email),
-                'title': registration.webinar.title,
-                'type': 'Webinar',
-                'status': registration.status,
-                'rejection_reason': registration.rejection_reason or '',
-            })
-
-            message = EmailMessage(
-                subject="Application status updated",
-                body=html_content,
-                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-                to=[user.email],
+            send_webinar_status_email.delay(
+                getattr(user, 'name', user.email),
+                user.email,
+                registration.webinar.title,
+                registration.status,
+                registration.rejection_reason or '',
             )
-
-            message.content_subtype = "html"
-            message.send(fail_silently=False)
 
         response_data = WebinarRegistrationSerializer(registration).data
         response_data['message'] = f'Registration status changed to {new_status}'

@@ -7,45 +7,12 @@ from .serializers import ChangePasswordSerializer,ForgotPasswordSerializer,Reset
 from rest_framework import status 
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
-from django.core.mail import EmailMessage
-from django.template.loader import render_to_string
 from django.conf import settings
-
-def send_verification_email(user):
-    frontend = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')
-    verification_path = f"/verify-email/?token={user.email_verification_token}"
-    verification_url = frontend.rstrip('/') + verification_path
-
-    html_content = render_to_string('emails/emailverification.html', {
-        'user_name': getattr(user, 'name', user.email),
-        'verification_url': verification_url,
-    })
-
-    message = EmailMessage(
-        subject="Verify your email",
-        body=html_content,
-        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-        to=[user.email],
-    )
-
-    message.content_subtype = "html"
-    message.send(fail_silently=False)
-
-def send_welcome_email(user):
-    html_content = render_to_string('emails/welcomeuser.html', {
-        'user_name': getattr(user, 'name', user.email),
-        'email': user.email,
-    })
-
-    message = EmailMessage(
-        subject="Welcome to Liture",
-        body=html_content,
-        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-        to=[user.email],
-    )
-
-    message.content_subtype = "html"
-    message.send(fail_silently=False)
+from .tasks import (
+    send_password_reset_email,
+    send_verification_email,
+    send_welcome_email,
+)
 
 class UserChangePasswordAPI(APIView):
     permission_classes=[IsAuthenticated]
@@ -84,22 +51,13 @@ class ForgotPasswordAPI(APIView):
             reset_path = f"/reset-password/?token={user.password_reset_token}"
             reset_link = frontend.rstrip('/') + reset_path
 
-            html_content = render_to_string('emails/resetpassword.html', {
-                'user_name': getattr(user, 'name', user.email),
-                'user_email': user.email,
-                'reset_link': reset_link,
-                'dashboard_url': frontend.rstrip('/') + '/dashboard',
-            })
-            
-            message = EmailMessage(
-                subject="Password reset request",
-                body=html_content,
-                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-                to=[user.email],
+            user_name = getattr(user, 'name', user.email)
+            send_password_reset_email.delay(
+                user_name,
+                user.email,
+                reset_link,
+                frontend.rstrip('/') + '/dashboard',
             )
-            
-            message.content_subtype = "html"
-            message.send(fail_silently=False)
             return Response({"message": "Password reset link has been sent to your email."}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -132,12 +90,17 @@ class UserRegisterAPI(APIView):
 
         email = data.get('email')
         existing_user = User.objects.filter(email=email).first()
+        print("hello")
         if existing_user:
             if existing_user.is_active:
                 return Response({"error": "Email already registered"}, status=status.HTTP_400_BAD_REQUEST)
 
             existing_user.generate_email_verification_token()
-            send_verification_email(existing_user)
+            send_verification_email.delay(
+                getattr(existing_user, 'name', existing_user.email),
+                existing_user.email,
+                existing_user.email_verification_token,
+            )
             return Response({"message": "verification_resent"}, status=status.HTTP_200_OK)
 
         serializer = CreateUserSerializer(data=data)
@@ -147,7 +110,11 @@ class UserRegisterAPI(APIView):
             user.generate_email_verification_token()
             user.save()
 
-            send_verification_email(user)
+            send_verification_email.delay(
+                getattr(user, 'name', user.email),
+                user.email,
+                user.email_verification_token,
+            )
             return Response({"message": "created"}, status=status.HTTP_201_CREATED)
 
         return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
@@ -171,7 +138,10 @@ class VerifyEmailAPI(APIView):
             user.email_verification_expires = None
             user.save()
 
-            send_welcome_email(user)
+            send_welcome_email.delay(
+                getattr(user, 'name', user.email),
+                user.email,
+            )
             return Response({"message": "Email verified successfully."}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
