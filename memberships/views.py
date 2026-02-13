@@ -45,7 +45,7 @@ class MembershipRegistrationViewSet(viewsets.ModelViewSet):
         return MembershipRegistration.objects.filter(user=user)
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
+        if self.action in ['list', 'retrieve', 'create']:
             return [IsAuthenticated()]
         return [IsAuthenticated(), IsStaffOrSuperAdmin()]
 
