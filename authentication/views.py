@@ -97,26 +97,28 @@ class UserRegisterAPI(APIView):
         email = data.get('email')
         existing_user = User.objects.filter(email=email).first()
         if existing_user:
-            if existing_user.is_active:
-                return Response({"error": "Email already registered"}, status=status.HTTP_400_BAD_REQUEST)
-
-            existing_user.generate_email_verification_token()
-
+            # Previous logic (temporarily disabled):
+            # if existing_user.is_active:
+            #     return Response({"error": "Email already registered"}, status=status.HTTP_400_BAD_REQUEST)
+            #
+            # existing_user.generate_email_verification_token()
+            #
             # html_content = render_to_string('emails/emailverification.html', {
             #     'user_name': getattr(existing_user, 'name', existing_user.email),
             #     'verification_url': getattr(settings, 'FRONTEND_URL', 'http://localhost:3000').rstrip('/') + f"/verify-email/?token={existing_user.email_verification_token}",
             # })
-
+            #
             # message = EmailMessage(
             #     subject="Verify your email",
             #     body=html_content,
             #     from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
             #     to=[existing_user.email],
             # )
-
+            #
             # message.content_subtype = "html"
             # message.send(fail_silently=False)
-            return Response({"message": "verification_resent"}, status=status.HTTP_200_OK)
+            # return Response({"message": "verification_resent"}, status=status.HTTP_200_OK)
+            return Response({"error": "Email already registered"}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = CreateUserSerializer(data=data)
         if serializer.is_valid():
