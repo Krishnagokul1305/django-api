@@ -79,15 +79,15 @@ class MembershipRegistrationViewSet(viewsets.ModelViewSet):
             'current_year': timezone.now().year,
         })
 
-        message = EmailMessage(
-            subject="Registration received",
-            body=html_content,
-            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-            to=[user.email],
-        )
+        # message = EmailMessage(
+        #     subject="Registration received",
+        #     body=html_content,
+        #     from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+        #     to=[user.email],
+        # )
 
-        message.content_subtype = "html"
-        message.send(fail_silently=False)
+        # message.content_subtype = "html"
+        # message.send(fail_silently=False)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
@@ -146,15 +146,15 @@ class MembershipRegistrationViewSet(viewsets.ModelViewSet):
                 'rejection_reason': registration.rejection_reason or '',
             })
 
-            message = EmailMessage(
-                subject="Application status updated",
-                body=html_content,
-                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-                to=[user.email],
-            )
+            # message = EmailMessage(
+            #     subject="Application status updated",
+            #     body=html_content,
+            #     from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+            #     to=[user.email],
+            # )
 
-            message.content_subtype = "html"
-            message.send(fail_silently=False)
+            # message.content_subtype = "html"
+            # message.send(fail_silently=False)
 
         response_data = MembershipRegistrationSerializer(registration).data
         response_data['message'] = f'Membership status changed to {new_status}'

@@ -14,15 +14,15 @@ def send_contact_email(name, email, phone, message):
 	})
 
 	to_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None)
-	message_obj = EmailMessage(
-		subject=f"New contact message from {name}",
-		body=html_content,
-		from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-		to=[to_email] if to_email else [],
-		reply_to=[email],
-	)
+	# message_obj = EmailMessage(
+	# 	subject=f"New contact message from {name}",
+	# 	body=html_content,
+	# 	from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+	# 	to=[to_email] if to_email else [],
+	# 	reply_to=[email],
+	# )
 
-	message_obj.content_subtype = "html"
-	message_obj.send(fail_silently=False)
+	# message_obj.content_subtype = "html"
+	# message_obj.send(fail_silently=False)
 
 	return True

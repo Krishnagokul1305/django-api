@@ -83,16 +83,16 @@ class UserContactView(APIView):
             'message': data['message'],
         })
 
-        to_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None)
-        message = EmailMessage(
-            subject=f"New contact message from {data['name']}",
-            body=html_content,
-            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-            to=[to_email] if to_email else [],
-            reply_to=[data['email']],
-        )
+        # to_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None)
+        # message = EmailMessage(
+        #     subject=f"New contact message from {data['name']}",
+        #     body=html_content,
+        #     from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+        #     to=[to_email] if to_email else [],
+        #     reply_to=[data['email']],
+        # )
 
-        message.content_subtype = "html"
-        message.send(fail_silently=False)
+        # message.content_subtype = "html"
+        # message.send(fail_silently=False)
 
         return Response({"message": "Contact message sent successfully"}, status=status.HTTP_200_OK)

@@ -15,15 +15,15 @@ def send_verification_email(user_name, user_email, verification_token):
         'verification_url': verification_url,
     })
 
-    message = EmailMessage(
-        subject="Verify your email",
-        body=html_content,
-        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-        to=[user_email],
-    )
+    # message = EmailMessage(
+    #     subject="Verify your email",
+    #     body=html_content,
+    #     from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+    #     to=[user_email],
+    # )
 
-    message.content_subtype = "html"
-    message.send(fail_silently=False)
+    # message.content_subtype = "html"
+    # message.send(fail_silently=False)
 
     return True
 
@@ -35,15 +35,15 @@ def send_welcome_email(user_name, user_email):
         'email': user_email,
     })
 
-    message = EmailMessage(
-        subject="Welcome to Liture",
-        body=html_content,
-        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-        to=[user_email],
-    )
+    # message = EmailMessage(
+    #     subject="Welcome to Liture",
+    #     body=html_content,
+    #     from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+    #     to=[user_email],
+    # )
 
-    message.content_subtype = "html"
-    message.send(fail_silently=False)
+    # message.content_subtype = "html"
+    # message.send(fail_silently=False)
 
     return True
 
@@ -57,14 +57,14 @@ def send_password_reset_email(user_name, user_email, reset_link, dashboard_url):
         'dashboard_url': dashboard_url,
     })
 
-    message = EmailMessage(
-        subject="Password reset request",
-        body=html_content,
-        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-        to=[user_email],
-    )
+    # message = EmailMessage(
+    #     subject="Password reset request",
+    #     body=html_content,
+    #     from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+    #     to=[user_email],
+    # )
 
-    message.content_subtype = "html"
-    message.send(fail_silently=False)
+    # message.content_subtype = "html"
+    # message.send(fail_silently=False)
 
     return True

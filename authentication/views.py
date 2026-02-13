@@ -54,17 +54,17 @@ class ForgotPasswordAPI(APIView):
                 'reset_link': reset_link,
                 'dashboard_url': frontend.rstrip('/') + '/dashboard',
             })
-            
-            message = EmailMessage(
-                subject="Password reset request",
-                body=html_content,
-                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-                to=[user.email],
-            )
-            
-            message.content_subtype = "html"
-            message.send(fail_silently=False)
-            return Response({"message": "Password reset link has been sent to your email."}, status=status.HTTP_200_OK)
+
+            # message = EmailMessage(
+            #     subject="Password reset request",
+            #     body=html_content,
+            #     from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+            #     to=[user.email],
+            # )
+
+            # message.content_subtype = "html"
+            # message.send(fail_silently=False)
+            return Response({"token": user.password_reset_token}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -101,44 +101,44 @@ class UserRegisterAPI(APIView):
                 return Response({"error": "Email already registered"}, status=status.HTTP_400_BAD_REQUEST)
 
             existing_user.generate_email_verification_token()
-            
-            html_content = render_to_string('emails/emailverification.html', {
-                'user_name': getattr(existing_user, 'name', existing_user.email),
-                'verification_url': getattr(settings, 'FRONTEND_URL', 'http://localhost:3000').rstrip('/') + f"/verify-email/?token={existing_user.email_verification_token}",
-            })
 
-            message = EmailMessage(
-                subject="Verify your email",
-                body=html_content,
-                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-                to=[existing_user.email],
-            )
+            # html_content = render_to_string('emails/emailverification.html', {
+            #     'user_name': getattr(existing_user, 'name', existing_user.email),
+            #     'verification_url': getattr(settings, 'FRONTEND_URL', 'http://localhost:3000').rstrip('/') + f"/verify-email/?token={existing_user.email_verification_token}",
+            # })
 
-            message.content_subtype = "html"
-            message.send(fail_silently=False)
+            # message = EmailMessage(
+            #     subject="Verify your email",
+            #     body=html_content,
+            #     from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+            #     to=[existing_user.email],
+            # )
+
+            # message.content_subtype = "html"
+            # message.send(fail_silently=False)
             return Response({"message": "verification_resent"}, status=status.HTTP_200_OK)
 
         serializer = CreateUserSerializer(data=data)
         if serializer.is_valid():
             user = serializer.save()
-            user.is_active = False
+            # user.is_active = False
             user.generate_email_verification_token()
             user.save()
 
-            html_content = render_to_string('emails/emailverification.html', {
-                'user_name': getattr(user, 'name', user.email),
-                'verification_url': getattr(settings, 'FRONTEND_URL', 'http://localhost:3000').rstrip('/') + f"/verify-email/?token={user.email_verification_token}",
-            })
+            # html_content = render_to_string('emails/emailverification.html', {
+            #     'user_name': getattr(user, 'name', user.email),
+            #     'verification_url': getattr(settings, 'FRONTEND_URL', 'http://localhost:3000').rstrip('/') + f"/verify-email/?token={user.email_verification_token}",
+            # })
 
-            message = EmailMessage(
-                subject="Verify your email",
-                body=html_content,
-                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-                to=[user.email],
-            )
+            # message = EmailMessage(
+            #     subject="Verify your email",
+            #     body=html_content,
+            #     from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+            #     to=[user.email],
+            # )
 
-            message.content_subtype = "html"
-            message.send(fail_silently=False)
+            # message.content_subtype = "html"
+            # message.send(fail_silently=False)
             return Response({"message": "created"}, status=status.HTTP_201_CREATED)
 
         return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
@@ -162,20 +162,20 @@ class VerifyEmailAPI(APIView):
             user.email_verification_expires = None
             user.save()
 
-            html_content = render_to_string('emails/welcomeuser.html', {
-                'user_name': getattr(user, 'name', user.email),
-                'email': user.email,
-            })
+            # html_content = render_to_string('emails/welcomeuser.html', {
+            #     'user_name': getattr(user, 'name', user.email),
+            #     'email': user.email,
+            # })
 
-            message = EmailMessage(
-                subject="Welcome to Liture",
-                body=html_content,
-                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-                to=[user.email],
-            )
+            # message = EmailMessage(
+            #     subject="Welcome to Liture",
+            #     body=html_content,
+            #     from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+            #     to=[user.email],
+            # )
 
-            message.content_subtype = "html"
-            message.send(fail_silently=False)
+            # message.content_subtype = "html"
+            # message.send(fail_silently=False)
             return Response({"message": "Email verified successfully."}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

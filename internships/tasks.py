@@ -14,15 +14,15 @@ def send_internship_registration_email(user_name, user_email, title, current_yea
         'current_year': current_year,
     })
 
-    message = EmailMessage(
-        subject="Registration received",
-        body=html_content,
-        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-        to=[user_email],
-    )
+    # message = EmailMessage(
+    #     subject="Registration received",
+    #     body=html_content,
+    #     from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+    #     to=[user_email],
+    # )
 
-    message.content_subtype = "html"
-    message.send(fail_silently=False)
+    # message.content_subtype = "html"
+    # message.send(fail_silently=False)
 
     return True
 
@@ -37,14 +37,14 @@ def send_internship_status_email(user_name, user_email, title, status, rejection
         'rejection_reason': rejection_reason or '',
     })
 
-    message = EmailMessage(
-        subject="Application status updated",
-        body=html_content,
-        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-        to=[user_email],
-    )
+    # message = EmailMessage(
+    #     subject="Application status updated",
+    #     body=html_content,
+    #     from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+    #     to=[user_email],
+    # )
 
-    message.content_subtype = "html"
-    message.send(fail_silently=False)
+    # message.content_subtype = "html"
+    # message.send(fail_silently=False)
 
     return True
