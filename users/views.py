@@ -9,16 +9,25 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.conf import settings
+from .filters import UserFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 class UserListAPI(APIView):
     permission_classes=[IsAuthenticated,IsStaffOrSuperAdmin]
     pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = UserFilter
     
-    def get(self,request):
-        users=User.objects.all()
+    def get(self, request):
+        users = User.objects.all()
+        filterset = UserFilter(request.GET, queryset=users)
+        if filterset.is_valid():
+            users = filterset.qs
+
         paginator = self.pagination_class()
         paginated_users = paginator.paginate_queryset(users, request)
-        serialized_users=UserListSerializer(paginated_users,many=True)
+        serialized_users = UserListSerializer(paginated_users, many=True)
+
         return paginator.get_paginated_response(serialized_users.data)
     
     def post(self,request):
